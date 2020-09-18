@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "189265120991",
+    "firebase_url": "https://jokers-c90f5.firebaseio.com",
+    "project_id": "jokers-c90f5",
+    "storage_bucket": "jokers-c90f5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:189265120991:android:9c18560b687c2fe125e36a",
+        "android_client_info": {
+          "package_name": "com.example.reactorsafetysystem_jokers"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "189265120991-o46ob6q7n7r4olfa911al606jgtpe7cb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAGJwD59lZiI9wX90_P1aLIKxqiAdae3Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "189265120991-o46ob6q7n7r4olfa911al606jgtpe7cb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
