@@ -17,15 +17,12 @@ public class DatabaseRFIDRepository {
 
     public Task<QuerySnapshot> getUserInfo(String userId) {
 
-        Log.d("yeeeeeeeeeeeeeeeeeeeeet",userId);
-
         return db.collection("users").whereEqualTo("userId",userId).get();
-
-
 
     }
 
-
-
+    public void setUserClockInState(Boolean flag, String documentId) {
+        db.collection("users").document(documentId).update("userstate", flag);
+    }
 
 }

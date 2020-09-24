@@ -20,33 +20,59 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
     DatabaseRFIDRepository db = new DatabaseRFIDRepository();
 
     private static final int RC_SIGN_IN = 123;
+    private static String check_RFID;
+    private static String documentId;
+    private static String disByteArray = "A6155549";
+    private static Boolean userState;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //createSignInIntent();
+        createSignInIntent();
 
         db.getUserInfo("qpGCZ9QCMdh4AfwheTy7ShUNF").addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
                     for (QueryDocumentSnapshot document : task.getResult()) {
-                        Log.d("yeet", document.getId() + " => " + document.getData());
+                        documentId = document.getId();
+
+                        check_RFID = Objects.requireNonNull(document.getData().get("RFID")).toString();
+                        userState = (Boolean) Objects.requireNonNull(document.getData().get("userstate"));
+
+                        Log.d("test", check_RFID);
+                        Log.d("test", String.valueOf(userState));
+
                     }
-                } else {
+
+                    if (check_RFID.equals(disByteArray)) {
+                        if (userState) {
+                            db.setUserClockInState(false, documentId);
+                            //skicka tillbaka lämpligt protokoll till DIS
+                        }
+                        else {
+                            db.setUserClockInState(true, documentId);
+                            //skicka tillbaka lämpligt protokoll till DIS
+                        }
+                    }
+                }
+                else {
                     Log.w("yeet", "Error getting documents.", task.getException());
+                    //skicka tillbaka lämpligt protokoll till DIS INGEN CONNECTIOn typ
                 }
             }
         });
-
-
     }
 
     public void createSignInIntent() {
@@ -86,58 +112,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     // [END auth_fui_result]
-
-/*
-
-    boolean clockInClockOut(string RFID) {
-
-         db.checkIfUserIsClockedIn(RFID).addOnSuccessListener { clockedIn ->
-
-            if(!clockedIn){
-
-                db.clockInUser(RFID).addOnSuccessListener {
-
-                    return true //skicka med bluetooth tillbaka true för att indikera lyckad inloggning
-
-                }.addOnFailureListener {
-
-                    return false
-
-                }
-
-            }else{
-
-                db.clockOutUser(RFID).addOnSuccessListener {
-
-                    return true //skicka med bluetooth tillbaka true för att indikera lyckad inloggning
-
-                }.addOnFailureListener {
-
-                    return false
-
-                }
-
-            }
-         }.addOnFailureListener {
-
-            return false
-
-         }
-
-     }
-
-
-         */
-
-
-
-
-
-
-
-
-
-
-
-
 }
