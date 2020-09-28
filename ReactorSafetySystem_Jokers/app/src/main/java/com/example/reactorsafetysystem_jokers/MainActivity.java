@@ -22,6 +22,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,41 +32,34 @@ public class MainActivity extends AppCompatActivity {
 
     DatabaseRFIDRepository db = new DatabaseRFIDRepository();
 
-    private static final int RC_SIGN_IN = 123;
     private static String check_RFID;
     private static String documentId;
     private static String disByteArray = "A6155549";
     private static Boolean userState;
     private static List<String> recievedBytes = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        createSignInIntent();
 
-        //bytearray läsa av den, konvertera till string, konvertera tillbaka
+        setContentView(R.layout.activity_main);
 
         byte[] bytes = new byte[] {0,0,0,0,0x0A,6,1,5,5,5,4,9};
 
-        for(int i = 0; i < bytes.length; i++){
+        for(int i = 0; i < bytes.length; i++) {
             byte byteNumber = Array.getByte(bytes,i);
             recievedBytes.add(String.valueOf(byteNumber));
         }
-        Log.d("ListOfBytes", String.valueOf(recievedBytes));
 
         db.getUserInfo("qpGCZ9QCMdh4AfwheTy7ShUNF").addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        documentId = document.getId();
 
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                        documentId = document.getId();
                         check_RFID = Objects.requireNonNull(document.getData().get("RFID")).toString();
                         userState = (Boolean) Objects.requireNonNull(document.getData().get("userstate"));
-
-                        Log.d("test", check_RFID);
-                        Log.d("test", String.valueOf(userState));
-
                     }
 
                     if (check_RFID.equals(disByteArray)) {
@@ -86,42 +80,4 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-    public void createSignInIntent() {
-        // [START auth_fui_create_intent]
-        // Choose authentication providers
-        List<AuthUI.IdpConfig> providers = Arrays.asList(
-                new AuthUI.IdpConfig.EmailBuilder().build());
-
-        // Create and launch sign-in intent
-        startActivityForResult(
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(providers)
-                        .build(),
-                RC_SIGN_IN);
-        // [END auth_fui_create_intent]
-    }
-
-    // [START auth_fui_result]
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == RC_SIGN_IN) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-
-            if (resultCode == RESULT_OK) {
-                // Successfully signed in
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                // ...
-            } else {
-                // Sign in failed. If response is null the user canceled the
-                // sign-in flow using the back button. Otherwise check
-                // response.getError().getErrorCode() and handle the error.
-                // ...
-            }
-        }
-    }
-    // [END auth_fui_result]
 }
