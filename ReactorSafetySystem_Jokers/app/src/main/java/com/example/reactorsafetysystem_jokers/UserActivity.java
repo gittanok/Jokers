@@ -5,6 +5,8 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,16 +15,32 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class UserActivity extends AppCompatActivity {
 
+    DatabaseRFIDRepository db = new DatabaseRFIDRepository();
 
+    private static String check_RFID;
+    private static String documentId;
+    private static String disByteArray = "A6155549";
+    private static Boolean userState;
+    private static List<String> recievedBytes = new ArrayList<>();
 
 
     private static final int REQUEST_ENABLE_BT = 1;
@@ -32,7 +50,7 @@ public class UserActivity extends AppCompatActivity {
     ListView listViewPairedDevice;
     LinearLayout inputPane;
     EditText inputField;
-    Button btnSend, btnClear;
+    Button btnTest, btnClear;
 
     ArrayAdapter<BluetoothDevice> pairedDeviceAdapter;
     private UUID myUUID;
@@ -42,6 +60,7 @@ public class UserActivity extends AppCompatActivity {
     ThreadConnectBTdevice myThreadConnectBTdevice;
     ThreadConnected myThreadConnected;
     BluetoothAdapter mBluetoothAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,11 +77,55 @@ public class UserActivity extends AppCompatActivity {
 
          */
 
+        btnTest = findViewById(R.id.btnTest);
+
+        btnTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                db.getUserInfo("qpGCZ9QCMdh4AfwheTy7ShUNF").addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                                documentId = document.getId();
+                                check_RFID = Objects.requireNonNull(document.getData().get("RFID")).toString();
+                                userState = (Boolean) Objects.requireNonNull(document.getData().get("userstate"));
+                            }
+
+                            if (check_RFID.equals(disByteArray)) {
+                                if (userState) {
+                                    db.setUserClockInState(false, documentId);
+                                    //skicka tillbaka lämpligt protokoll till DIS
+                                }
+                                else {
+                                    db.setUserClockInState(true, documentId);
+                                    //skicka tillbaka lämpligt protokoll till DIS
+                                }
+                            }
+                        }
+                        else {
+                            Log.w("yeet", "Error getting documents.", task.getException());
+                            //skicka tillbaka lämpligt protokoll till DIS INGEN CONNECTIOn typ
+                        }
+                    }
+                });
+
+
+
+
+
+
+
+            }
+        });
 
         /*
         inputPane = (LinearLayout)findViewById(R.id.inputpane);
         inputField = (EditText)findViewById(R.id.input);
-        btnSend = (Button)findViewById(R.id.send);
+
         btnSend.setOnClickListener(new View.OnClickListener(){
 
             @Override
@@ -312,13 +375,16 @@ public class UserActivity extends AppCompatActivity {
             while (true) {
                 try {
                     bytes = connectedInputStream.read(buffer);
+
                     final String strReceived = new String(buffer, 0, bytes);
                     final String strByteCnt = String.valueOf(bytes) + " bytes received.\n";
 
-                    //gör saker här
+                    for(int i = 0; i < buffer.length; i++) {
+                        byte byteNumber = Array.getByte(bytes,i);
+                        recievedBytes.add(String.valueOf(byteNumber));
+                    }
 
 
-                    //
 
                     runOnUiThread(new Runnable(){
 
