@@ -1,14 +1,18 @@
 package com.example.reactorsafetysystem_jokers;
 
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -18,8 +22,13 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import java.io.IOException;
 import java.util.Set;
+import java.util.UUID;
+
+import static android.provider.Settings.NameValueTable.NAME;
 
 public class DeviceListActivity extends AppCompatActivity {
 
@@ -41,13 +50,15 @@ public class DeviceListActivity extends AppCompatActivity {
         Button scanButton = (Button) findViewById(R.id.button_scan);
         scanButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                Log.d("REEEEEEEEEEEEEEEEEE", "scan button clicked");
                 doDiscovery();
                 v.setVisibility(View.GONE);
             }
         });
 
-        ArrayAdapter<String> pairedDevicesArrayAdapter =
-                new ArrayAdapter<String>(this, R.layout.device_name);
+        // Initialize array adapters. One for already paired devices and
+        // one for newly discovered devices
+        ArrayAdapter<String> pairedDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
         mNewDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
 
         // Find and set up the ListView for paired devices
@@ -59,6 +70,7 @@ public class DeviceListActivity extends AppCompatActivity {
         ListView newDevicesListView = (ListView) findViewById(R.id.new_devices);
         newDevicesListView.setAdapter(mNewDevicesArrayAdapter);
         newDevicesListView.setOnItemClickListener(mDeviceClickListener);
+
 
         // Register for broadcasts when a device is discovered
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -74,15 +86,19 @@ public class DeviceListActivity extends AppCompatActivity {
         // Get a set of currently paired devices
         Set<BluetoothDevice> pairedDevices = mBtAdapter.getBondedDevices();
 
+        // If there are paired devices, add each one to the ArrayAdapter
         if (pairedDevices.size() > 0) {
-            // There are paired devices. Get the name and address of each paired device.
+            findViewById(R.id.title_paired_devices).setVisibility(View.VISIBLE);
             for (BluetoothDevice device : pairedDevices) {
-                String deviceName = device.getName();
-                String deviceHardwareAddress = device.getAddress(); // MAC address
+                pairedDevicesArrayAdapter.add(device.getName() + "\n" + device.getAddress());
             }
+        } else {
+            String noDevices = getResources().getText(R.string.none_paired).toString();
+            pairedDevicesArrayAdapter.add(noDevices);
         }
-
     }
+
+
 
 
     @Override
@@ -98,10 +114,11 @@ public class DeviceListActivity extends AppCompatActivity {
         this.unregisterReceiver(mReceiver);
     }
 
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+    public final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            Log.d("REEEEEEEEEEEEEEEE", "inside broadcastreciever");
 
             // When discovery finds a device
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
@@ -109,6 +126,7 @@ public class DeviceListActivity extends AppCompatActivity {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 // If it's already paired, skip it, because it's been listed already
                 if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
+                    Log.d("REEEEEEEEEEEEEE","found a new device");
                     mNewDevicesArrayAdapter.add(device.getName() + "\n" + device.getAddress());
                 }
                 // When discovery is finished, change the Activity title
@@ -116,6 +134,7 @@ public class DeviceListActivity extends AppCompatActivity {
                 setProgressBarIndeterminateVisibility(false);
                 setTitle(R.string.select_device);
                 if (mNewDevicesArrayAdapter.getCount() == 0) {
+                    Log.d("REEEEEEEEEEEEEE", "inside no new devicesssss");
                     String noDevices = getResources().getText(R.string.none_found).toString();
                     mNewDevicesArrayAdapter.add(noDevices);
                 }
@@ -124,9 +143,7 @@ public class DeviceListActivity extends AppCompatActivity {
 
     };
 
-
     private void doDiscovery() {
-        //Log.d(TAG, "doDiscovery()");
 
         // Indicate scanning in the title
         setProgressBarIndeterminateVisibility(true);
@@ -135,13 +152,31 @@ public class DeviceListActivity extends AppCompatActivity {
         // Turn on sub-title for new devices
         findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
 
+        Log.d("REEEEEEEEEEE", "inside do discovery");
+
         // If we're already discovering, stop it
         if (mBtAdapter.isDiscovering()) {
             mBtAdapter.cancelDiscovery();
         }
 
+
+        int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
+        ActivityCompat.requestPermissions(
+                this,
+                new String[]
+                        {Manifest.permission.ACCESS_COARSE_LOCATION},
+                MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+
         // Request discover from BluetoothAdapter
-        mBtAdapter.startDiscovery();
+
+           boolean bool = mBtAdapter.startDiscovery();
+           if(bool){
+           Log.d("return value from start discovery", "true");
+           }else{
+               Log.d("return value from start discovery", "false");
+           }
+        //you may have to turn the phones gps on for this to work
+
     }
 
 
@@ -166,4 +201,8 @@ public class DeviceListActivity extends AppCompatActivity {
     };
 
 
+
+
+
 }
+
