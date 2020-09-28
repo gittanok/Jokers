@@ -19,6 +19,8 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -34,12 +36,22 @@ public class MainActivity extends AppCompatActivity {
     private static String documentId;
     private static String disByteArray = "A6155549";
     private static Boolean userState;
-
+    private static List<String> recievedBytes = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         createSignInIntent();
+
+        //bytearray läsa av den, konvertera till string, konvertera tillbaka
+
+        byte[] bytes = new byte[] {0,0,0,0,0x0A,6,1,5,5,5,4,9};
+
+        for(int i = 0; i < bytes.length; i++){
+            byte byteNumber = Array.getByte(bytes,i);
+            recievedBytes.add(String.valueOf(byteNumber));
+        }
+        Log.d("ListOfBytes", String.valueOf(recievedBytes));
 
         db.getUserInfo("qpGCZ9QCMdh4AfwheTy7ShUNF").addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
