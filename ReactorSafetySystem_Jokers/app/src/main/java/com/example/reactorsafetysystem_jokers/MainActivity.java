@@ -30,13 +30,7 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
-    DatabaseRFIDRepository db = new DatabaseRFIDRepository();
 
-    private static String check_RFID;
-    private static String documentId;
-    private static String disByteArray = "A6155549";
-    private static Boolean userState;
-    private static List<String> recievedBytes = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,40 +38,6 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        byte[] bytes = new byte[] {0,0,0,0,0x0A,6,1,5,5,5,4,9};
 
-        for(int i = 0; i < bytes.length; i++) {
-            byte byteNumber = Array.getByte(bytes,i);
-            recievedBytes.add(String.valueOf(byteNumber));
-        }
-
-        db.getUserInfo("qpGCZ9QCMdh4AfwheTy7ShUNF").addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-
-                if (task.isSuccessful()) {
-                    for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
-                        documentId = document.getId();
-                        check_RFID = Objects.requireNonNull(document.getData().get("RFID")).toString();
-                        userState = (Boolean) Objects.requireNonNull(document.getData().get("userstate"));
-                    }
-
-                    if (check_RFID.equals(disByteArray)) {
-                        if (userState) {
-                            db.setUserClockInState(false, documentId);
-                            //skicka tillbaka lämpligt protokoll till DIS
-                        }
-                        else {
-                            db.setUserClockInState(true, documentId);
-                            //skicka tillbaka lämpligt protokoll till DIS
-                        }
-                    }
-                }
-                else {
-                    Log.w("yeet", "Error getting documents.", task.getException());
-                    //skicka tillbaka lämpligt protokoll till DIS INGEN CONNECTIOn typ
-                }
-            }
-        });
     }
 }

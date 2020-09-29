@@ -1,9 +1,13 @@
 package com.example.reactorsafetysystem_jokers;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.media.AudioAttributes;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -17,6 +21,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -31,8 +37,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class UserActivity extends AppCompatActivity {
+
+
+
 
     DatabaseRFIDRepository db = new DatabaseRFIDRepository();
 
@@ -41,6 +51,7 @@ public class UserActivity extends AppCompatActivity {
     private static String disByteArray = "A6155549";
     private static Boolean userState;
     private static List<String> recievedBytes = new ArrayList<>();
+
 
 
     private static final int REQUEST_ENABLE_BT = 1;
@@ -67,6 +78,8 @@ public class UserActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user);
 
+        createNotificationChannel();
+
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         /*
 
@@ -77,7 +90,33 @@ public class UserActivity extends AppCompatActivity {
 
          */
 
+
         btnTest = findViewById(R.id.btnTest);
+        Button btnWarningNotification = findViewById(R.id.button_warning_notification);
+
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "channel1")
+                .setSmallIcon(R.drawable.ic_warning_notification)
+                .setContentTitle("WARNING DANGER")
+                .setContentText("Time is running out run")
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText("Abort reactor boom boom"))
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        btnWarningNotification.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    TimeUnit.SECONDS.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(UserActivity.this);
+
+// notificationId is a unique int for each notification that you must define
+                notificationManager.notify(5, builder.build());
+
+            }
+        });
 
         btnTest.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,14 +152,10 @@ public class UserActivity extends AppCompatActivity {
                     }
                 });
 
-
-
-
-
-
-
             }
+
         });
+
 
         /*
         inputPane = (LinearLayout)findViewById(R.id.inputpane);
@@ -186,7 +221,23 @@ public class UserActivity extends AppCompatActivity {
  */
     }
 
+    
 
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "warning notification";
+            String description = "warning notfication alert";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel("channel1", name, importance);
+            channel.setDescription(description);
+            channel.enableLights(true);
+            channel.enableVibration(true);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
 
 
 
