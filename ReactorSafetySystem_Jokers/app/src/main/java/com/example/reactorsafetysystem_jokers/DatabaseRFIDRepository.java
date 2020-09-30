@@ -25,4 +25,9 @@ public class DatabaseRFIDRepository {
         db.collection("users").document(documentId).update("userstate", flag);
     }
 
+    public String getShit(){
+
+        return "shit";
+    }
+
 }

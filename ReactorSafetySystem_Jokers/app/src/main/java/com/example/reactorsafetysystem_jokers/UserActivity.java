@@ -37,8 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 public class UserActivity extends AppCompatActivity {
 
 
@@ -53,17 +51,13 @@ public class UserActivity extends AppCompatActivity {
     private static List<String> recievedBytes = new ArrayList<>();
 
 
-
     private static final int REQUEST_ENABLE_BT = 1;
 
 
-    TextView textInfo, textStatus, textByteCnt;
-    ListView listViewPairedDevice;
-    LinearLayout inputPane;
-    EditText inputField;
-    Button btnTest, btnClear;
+    TextView textStatus, textByteCnt;
 
-    ArrayAdapter<BluetoothDevice> pairedDeviceAdapter;
+    Button btnTest;
+
     private UUID myUUID;
     private final String UUID_STRING_WELL_KNOWN_SPP =
             "00001101-0000-1000-8000-00805F9B34FB";
@@ -81,14 +75,7 @@ public class UserActivity extends AppCompatActivity {
         createNotificationChannel();
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        /*
 
-        textInfo = (TextView)findViewById(R.id.info);
-        textStatus = (TextView)findViewById(R.id.status);
-        textByteCnt = (TextView)findViewById(R.id.textbyteCnt);
-        listViewPairedDevice = (ListView)findViewById(R.id.pairedlist);
-
-         */
 
 
         btnTest = findViewById(R.id.btnTest);
@@ -105,15 +92,23 @@ public class UserActivity extends AppCompatActivity {
         btnWarningNotification.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
-                    TimeUnit.SECONDS.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(UserActivity.this);
 
-// notificationId is a unique int for each notification that you must define
-                notificationManager.notify(5, builder.build());
+
+                new Thread(() -> {
+                    //Do whatever
+                    RadiationActivity radiation = new RadiationActivity();
+
+                    radiation.calculateRadiation();
+
+                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(UserActivity.this);
+                    notificationManager.notify(5, builder.build());
+
+                }).start();
+
+
+
+
+
 
             }
         });
@@ -156,72 +151,13 @@ public class UserActivity extends AppCompatActivity {
 
         });
 
-
-        /*
-        inputPane = (LinearLayout)findViewById(R.id.inputpane);
-        inputField = (EditText)findViewById(R.id.input);
-
-        btnSend.setOnClickListener(new View.OnClickListener(){
-
-            @Override
-            public void onClick(View v) {
-                if(myThreadConnected!=null){
-                    byte[] bytesToSend = inputField.getText().toString().getBytes();
-                    myThreadConnected.write(bytesToSend);
-                    byte[] NewLine = "\n".getBytes();
-                    myThreadConnected.write(NewLine);
-                }
-            }});
-
-
-
-
-        btnClear = (Button)findViewById(R.id.clear);
-        btnClear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                textStatus.setText("");
-                textByteCnt.setText("");
-            }
-        });
-
-        */
-
-        /*
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)){
-            Toast.makeText(this,
-                    "FEATURE_BLUETOOTH NOT support",
-                    Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
-
-
-         */
-
-        //using the well-known SPP UUID
         myUUID = UUID.fromString(UUID_STRING_WELL_KNOWN_SPP);
-/*
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (bluetoothAdapter == null) {
-            Toast.makeText(this,
-                    "Bluetooth is not supported on this hardware platform",
-                    Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
 
- */
-/*
-        String stInfo = bluetoothAdapter.getName() + "\n" +
-                bluetoothAdapter.getAddress();
-        Log.d("Device information", stInfo);
-        textInfo.setText(stInfo);
 
- */
+
     }
 
-    
+
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -240,13 +176,6 @@ public class UserActivity extends AppCompatActivity {
     }
 
 
-
-    /*
-    On return with a bluetooth device
-    myThreadConnectBTdevice = new ThreadConnectBTdevice(device);
-    myThreadConnectBTdevice.start();
-
-     */
 
     @Override
     protected void onDestroy() {
@@ -435,6 +364,12 @@ public class UserActivity extends AppCompatActivity {
                         recievedBytes.add(String.valueOf(byteNumber));
                     }
 
+                    // bytenumber , första byten
+
+                    //switch case
+
+
+
 
 
                     runOnUiThread(new Runnable(){
@@ -482,3 +417,68 @@ public class UserActivity extends AppCompatActivity {
 
 
 }
+
+
+
+        /*
+        inputPane = (LinearLayout)findViewById(R.id.inputpane);
+        inputField = (EditText)findViewById(R.id.input);
+
+        btnSend.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                if(myThreadConnected!=null){
+                    byte[] bytesToSend = inputField.getText().toString().getBytes();
+                    myThreadConnected.write(bytesToSend);
+                    byte[] NewLine = "\n".getBytes();
+                    myThreadConnected.write(NewLine);
+                }
+            }});
+
+
+
+
+        btnClear = (Button)findViewById(R.id.clear);
+        btnClear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                textStatus.setText("");
+                textByteCnt.setText("");
+            }
+        });
+
+        */
+
+        /*
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)){
+            Toast.makeText(this,
+                    "FEATURE_BLUETOOTH NOT support",
+                    Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
+
+         */
+
+//using the well-known SPP UUID
+
+/*
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter == null) {
+            Toast.makeText(this,
+                    "Bluetooth is not supported on this hardware platform",
+                    Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
+ */
+/*
+        String stInfo = bluetoothAdapter.getName() + "\n" +
+                bluetoothAdapter.getAddress();
+        Log.d("Device information", stInfo);
+        textInfo.setText(stInfo);
+
+ */
