@@ -5,22 +5,56 @@ import android.util.Log;
 public class RadiationActivity {
 
 
-    int radiation = 0;
+    int radiation = 30;
     int pc = 1;
+    int rc = 1;
+    int exposure = 0;
+    int radiationLimit = 800; //500000
+    boolean valuesChanged = true;
 
 
-    public void calculateRadiation(){
 
+    public boolean checkRadiationLimit(){
 
-        while(radiation <200000){
-            radiation += 1;
-            Log.d("radiation", String.valueOf(radiation));
-
+        exposure += radiation;
+        Log.d("radiation", String.valueOf(exposure));
+        if(exposure <= radiationLimit){
+            return false;
         }
+        return true;
+
+    }
+
+    public int timeRemaining(){
+
+        int timeRemaining = (radiationLimit - exposure) / ((radiation * rc) / pc);
+        return  timeRemaining;
+
+    }
+
+    public void setPc(int newPc){
+
+        pc = newPc;
+        valuesChanged = true;
+
+    }
+
+    public void setRadiation(int newRadiation){
+
+        radiation = newRadiation;
+        valuesChanged = true;
+
+    }
+
+    public boolean getValuesChanged(){
+
+
+        return valuesChanged;
 
 
     }
 
-
-
+    public void setValuesChanged(boolean valuesChanged) {
+        this.valuesChanged = valuesChanged;
+    }
 }

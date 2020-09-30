@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.media.AudioAttributes;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -37,6 +38,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 public class UserActivity extends AppCompatActivity {
 
 
@@ -49,7 +55,7 @@ public class UserActivity extends AppCompatActivity {
     private static String disByteArray = "A6155549";
     private static Boolean userState;
     private static List<String> recievedBytes = new ArrayList<>();
-
+    RadiationActivity radiation = new RadiationActivity();
 
     private static final int REQUEST_ENABLE_BT = 1;
 
@@ -96,12 +102,43 @@ public class UserActivity extends AppCompatActivity {
 
                 new Thread(() -> {
                     //Do whatever
-                    RadiationActivity radiation = new RadiationActivity();
 
-                    radiation.calculateRadiation();
+                    //radiation.calculateRadiation();
 
-                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(UserActivity.this);
-                    notificationManager.notify(5, builder.build());
+                    boolean warning = false;
+
+
+
+
+                    while(!warning) {
+
+                        warning = radiation.checkRadiationLimit();
+
+                        if (radiation.getValuesChanged()) {
+
+                            radiation.setValuesChanged(false);
+                            int timeRemaining = radiation.timeRemaining();
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateTimeRemaining(timeRemaining, builder);
+                                }
+                            });
+
+                        }
+
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+                        Log.d("sleep","inside while loop for warning");
+                    }
+
+                    Log.d("Threaaaaaaad", "doing the notification now");
+
 
                 }).start();
 
@@ -157,6 +194,33 @@ public class UserActivity extends AppCompatActivity {
 
     }
 
+    private void updateTimeRemaining(int timeRemaining, NotificationCompat.Builder builder){
+
+        long time = timeRemaining * 1000;
+
+        TextView timeInfo = findViewById(R.id.textview_time_remaining);
+
+        new CountDownTimer(time, 1000) {
+
+            public void onTick(long millisUntilFinished) {
+
+                long time = millisUntilFinished/1000;
+                long hours = time / 3600;
+                long minutes = (time % 3600) / 60;
+                long seconds = time % 60;
+                String timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+                timeInfo.setText(timeString);
+            }
+
+            public void onFinish() {
+                timeInfo.setText("Evacuate!!!");
+                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(UserActivity.this);
+                notificationManager.notify(5, builder.build());
+
+            }
+        }.start();
+
+    }
 
 
     private void createNotificationChannel() {
