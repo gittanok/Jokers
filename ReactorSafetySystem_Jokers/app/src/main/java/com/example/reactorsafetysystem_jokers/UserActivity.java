@@ -90,8 +90,6 @@ public class UserActivity extends AppCompatActivity {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
 
-
-
         Button changeRadiationButton = findViewById(R.id.button_change_radiation);
 
         changeRadiationButton.setOnClickListener(new View.OnClickListener() {
@@ -108,61 +106,12 @@ public class UserActivity extends AppCompatActivity {
         btnTest = findViewById(R.id.btnTest);
         Button btnWarningNotification = findViewById(R.id.button_warning_notification);
 
-        final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "channel1")
-                .setSmallIcon(R.drawable.ic_warning_notification)
-                .setContentTitle("WARNING DANGER")
-                .setContentText("Time is running out run")
-                .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText("Abort reactor boom boom"))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         btnWarningNotification.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-
-                new Thread(() -> {
-                    //Do whatever
-
-                    //radiation.calculateRadiation();
-
-                    boolean warning = false;
-
-
-
-
-
-                    while(!warning) {
-
-                        warning = radiation.checkRadiationLimit();
-
-                        if (radiation.getValuesChanged()) {
-
-                            radiation.setValuesChanged(false);
-                            int timeRemaining = radiation.timeRemaining();
-
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    updateTimeRemaining(timeRemaining, builder);
-                                }
-                            });
-
-                        }
-
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-
-                        Log.d("sleep","inside while loop for warning");
-                    }
-
-                    Log.d("Threaaaaaaad", "doing the notification now");
-
-
-                }).start();
+                //TODO: this should be started when i clock in
 
 
             }
@@ -174,7 +123,8 @@ public class UserActivity extends AppCompatActivity {
 
                 //TODO : send in array to clock in
 
-                //determineOperation();
+
+                determineOperation(Operation.CLOCK_IN_OR_OUT, new byte[] {0,0,0,0,0x0A,6,1,5,5,5,4,9} );
 
 
             }
@@ -186,6 +136,53 @@ public class UserActivity extends AppCompatActivity {
 
 
     }
+
+    private void prepareWarning(){
+
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "channel1")
+                .setSmallIcon(R.drawable.ic_warning_notification)
+                .setContentTitle("WARNING DANGER")
+                .setContentText("Time is running out run")
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText("Abort reactor boom boom"))
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        new Thread(() -> {
+
+            boolean warning = false;
+
+            while(!warning) {
+
+                warning = radiation.checkRadiationLimit();
+
+                if (radiation.getValuesChanged()) {
+
+                    radiation.setValuesChanged(false);
+                    int timeRemaining = radiation.timeRemaining();
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateTimeRemaining(timeRemaining, builder);
+                        }
+                    });
+
+                }
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                Log.d("sleep","inside while loop for warning");
+            }
+
+        }).start();
+
+
+    }
+
 
     private void updateTimeRemaining(int timeRemaining, NotificationCompat.Builder builder){
 
@@ -217,6 +214,8 @@ public class UserActivity extends AppCompatActivity {
                     NotificationManagerCompat notificationManager = NotificationManagerCompat.from(UserActivity.this);
                     notificationManager.notify(5, builder.build());
 
+
+                    sendResponse(Responses.WARNING);
                     byte[] byteResponse = new byte[] {0,0,1,0}; //system wide warning
                     //myThreadConnected.write(byteResponse);
 
@@ -229,8 +228,30 @@ public class UserActivity extends AppCompatActivity {
     }
 
 
-    private void clockInOrOut(){
+    private void clockInOrOut(byte[] RFID){
 
+        //"A6155549";
+
+
+        byte[] bytes = new byte[] {0,0,0,0,0x0A,6,1,5,5,5,4,9};
+
+        /*
+        for (byte b : bytes) {
+            String st = String.format("%02X", b);
+            System.out.print(st);
+            Log.d("RFID number", st);
+
+        }*/
+
+
+        byte[] bytes = Hex.decodeHex(hexString.toCharArray());
+
+
+        for(int i = 0; i < bytes.length; i++) {
+            byte byteNumber = Array.getByte(bytes,i);
+            recievedBytes.add(String.valueOf(byteNumber));
+        }
+        Log.d("RECEIEVED RFID number", String.valueOf(recievedBytes));
 
         db.getUserInfo(currentUser.getCurrentUser().getUid()).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -243,24 +264,19 @@ public class UserActivity extends AppCompatActivity {
                         userState = (Boolean) Objects.requireNonNull(document.getData().get("userstate"));
                     }
 
-                    if (check_RFID.equals(disByteArray)) {
+                    if (check_RFID.equals( disByteArray )) {
                         if (userState) {
                             db.setUserClockInState(false, documentId);
-                            byte[] byteResponse = new byte[] {0,0,0,1,0,0,0,1};
-                            //myThreadConnected.write(byteResponse);
-
+                            sendResponse(new byte[] {Responses.CLOCK_IN, Responses.CLOCK_OUT_SUCCESSFULL});
                         }
                         else {
                             db.setUserClockInState(true, documentId);
-                            byte[] byteResponse = new byte[] {0,0,0,1,0,0,1,0};
-                            //myThreadConnected.write(byteResponse);
-
+                            sendResponse(new byte[] {Responses.CLOCK_IN, Responses.CLOCK_IN_SUCCESSFULL});
                         }
                     }
                 }
                 else {
-                    byte[] byteResponse = new byte[] {0,0,0,1,0,0,0,0};
-                    //myThreadConnected.write(byteResponse);
+                    sendResponse(new byte[] {Responses.CLOCK_IN, Responses.REQUEST_FAILED});
                     Log.w("Error", "Error getting documents.", task.getException());
 
                 }
@@ -288,10 +304,6 @@ public class UserActivity extends AppCompatActivity {
 
 
     private void changeRadiationLevel(int radiationValue){
-
-        //= new BigInteger(information).intValue();
-
-
 
         Log.d("new value", String.valueOf(radiationValue));
 
@@ -490,22 +502,30 @@ public class UserActivity extends AppCompatActivity {
 
 
                     byte currentByte;
-                    int wantedBytes = 0;
+                    int informationByteSize = 0;
+
+                    //TODO test this shit
+                    //byte yeet = (byte)12;
+                    //char hmm = (char) yeet;
+                        //Log.d("e", String.valueOf(yeet));
+
+
 
                     int operation = (byte)connectedInputStream.read(buffer, 0, 1);
 
                     if(operation == Operation.CLOCK_IN_OR_OUT ){
 
-                        wantedBytes = 2;
+                        informationByteSize = 4;
 
                     }
                     if(operation == Operation.NEW_RADIATION_LEVEL){
 
-                        wantedBytes = 4;
+                        informationByteSize = 1;
 
                     }
 
-                    for(int i = 0; i < wantedBytes; i++){
+                    for(int i = 0; i < informationByteSize; i++){
+
                         currentByte = (byte)connectedInputStream.read(buffer, 0, 1);
                         buffer[bytes] = currentByte;
 
@@ -568,15 +588,29 @@ public class UserActivity extends AppCompatActivity {
 
     public interface Operation {
 
-        public static final byte CLOCK_IN_OR_OUT = 0;
-        public static final byte NEW_RADIATION_LEVEL = 3;
+        byte CLOCK_IN_OR_OUT = 0;
+        byte NEW_RADIATION_LEVEL = 3;
+
+    }
+
+    public interface Responses {
+
+        byte CLOCK_IN = 1;
+        byte CLOCK_IN_SUCCESSFULL = 2;
+        byte CLOCK_OUT_SUCCESSFULL = 1;
+        byte REQUEST_FAILED = 0;
+        byte[] WARNING = {(byte)2};
+
+    }
+
+    private void sendResponse(byte[] byteResponse){
+
+
+        //myThreadConnected.write(byteResponse);
 
     }
 
     private void determineOperation(int operation, byte[] buffer){
-
-
-        //byte[] input = { (byte)3, (byte)0, (byte)0, (byte)0, (byte)0 };
 
 
         switch(operation) {
@@ -584,22 +618,23 @@ public class UserActivity extends AppCompatActivity {
 
                 Log.d("operation", "inside clock in/out ");
 
-                //byte[] infoBuffer = new byte[1024];
-                //int infoBytes = connectedInputStream.read(infoBuffer);
+                clockInOrOut(buffer);
+                prepareWarning();
 
-                //clockInOrOut(informationBuffer);
+                break;
 
-
-                //Clock in or clock out
             case Operation.NEW_RADIATION_LEVEL:
                 Log.d("operation", "inside radiation level");
                 int radiationValue = buffer[0];
 
                 changeRadiationLevel(radiationValue);
 
+                break;
+
             default:
 
                 // code block
+                break;
 
         }
 
