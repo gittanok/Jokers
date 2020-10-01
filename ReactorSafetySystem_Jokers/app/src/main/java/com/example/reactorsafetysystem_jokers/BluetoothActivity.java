@@ -84,11 +84,15 @@ public class BluetoothActivity extends AppCompatActivity {
                     Intent intent = new Intent();
                     intent.putExtra(DEVICE_ADDRESS, device);
 
+                    //TODO check if you get to the next activity as intended, should probably be moved to ONCREATE.
                     // Set result and finish this Activity
+                    startActivity(new Intent(getApplicationContext(), UserActivity.class));
                     setResult(Activity.RESULT_OK, intent);
                     finish();
 
                     //textStatus.setText("start ThreadConnectBTdevice");
+
+ //                   startActivity(new Intent(getApplicationContext(), BluetoothActivity.class) );
 
                 }
             });

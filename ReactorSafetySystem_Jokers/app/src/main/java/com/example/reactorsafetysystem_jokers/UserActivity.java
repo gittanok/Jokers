@@ -167,6 +167,8 @@ public class UserActivity extends AppCompatActivity {
                         }
                     });
 
+                    convertTimeRemaining(timeRemaining);
+
                 }
 
                 try {
@@ -181,6 +183,15 @@ public class UserActivity extends AppCompatActivity {
         }).start();
 
 
+    }
+
+    private void convertTimeRemaining(int timeRemaining) {
+        long hours = timeRemaining / 3600;
+        long minutes = (timeRemaining % 3600) / 60;
+
+        byte[] sendTimeToConsole = {Responses.TIME_LEFT, (byte) hours, (byte) minutes};
+
+        sendResponse(sendTimeToConsole);
     }
 
 
@@ -242,9 +253,6 @@ public class UserActivity extends AppCompatActivity {
             Log.d("RFID number", st);
 
         }*/
-
-
-        byte[] bytes = Hex.decodeHex(hexString.toCharArray());
 
 
         for(int i = 0; i < bytes.length; i++) {
@@ -600,6 +608,7 @@ public class UserActivity extends AppCompatActivity {
         byte CLOCK_OUT_SUCCESSFULL = 1;
         byte REQUEST_FAILED = 0;
         byte[] WARNING = {(byte)2};
+        byte TIME_LEFT = 3;
 
     }
 
