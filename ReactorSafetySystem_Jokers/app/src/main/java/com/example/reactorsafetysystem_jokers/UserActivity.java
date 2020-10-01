@@ -56,6 +56,7 @@ public class UserActivity extends AppCompatActivity {
     private static Boolean userState;
     private static List<String> recievedBytes = new ArrayList<>();
     RadiationActivity radiation = new RadiationActivity();
+    private static String byteProtocol;
 
     private static final int REQUEST_ENABLE_BT = 1;
 
@@ -106,6 +107,7 @@ public class UserActivity extends AppCompatActivity {
                     //radiation.calculateRadiation();
 
                     boolean warning = false;
+
 
 
 
@@ -428,9 +430,23 @@ public class UserActivity extends AppCompatActivity {
                         recievedBytes.add(String.valueOf(byteNumber));
                     }
 
-                    // bytenumber , första byten
+                    byteProtocol = "";
+                    for(int i = 0; i < 4; i++){
+                        byteProtocol += recievedBytes.get(i);
+                    }
 
-                    //switch case
+                    switch(byteProtocol) {
+                        case "0000":
+                            break;
+                        case "0001":
+                            break;
+                        case "0010":
+                            break;
+                        case "0011":
+                            break;
+                        default:
+                            // code block
+                    }
 
 
 
@@ -478,6 +494,9 @@ public class UserActivity extends AppCompatActivity {
             }
         }
     }
+
+
+
 
 
 }
