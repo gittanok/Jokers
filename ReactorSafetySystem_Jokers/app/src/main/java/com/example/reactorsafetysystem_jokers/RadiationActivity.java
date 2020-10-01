@@ -28,6 +28,7 @@ public class RadiationActivity {
     public int timeRemaining(){
 
         int timeRemaining = (radiationLimit - exposure) / ((radiation * rc) / pc);
+        Log.d("Time", "Has changed ");
         return  timeRemaining;
 
     }
@@ -43,6 +44,7 @@ public class RadiationActivity {
 
         radiation = newRadiation;
         valuesChanged = true;
+        Log.d("radiation", "radiation level changed");
 
     }
 
@@ -55,6 +57,7 @@ public class RadiationActivity {
     }
 
     public void setValuesChanged(boolean valuesChanged) {
+        Log.d("values Changed", "this should appear twice");
         this.valuesChanged = valuesChanged;
     }
 }

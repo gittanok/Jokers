@@ -35,7 +35,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -52,6 +55,7 @@ public class UserActivity extends AppCompatActivity {
     DatabaseRFIDRepository db = new DatabaseRFIDRepository();
 
 
+    private CountDownTimer mCountDownTimer;
     private static String check_RFID;
     private static String documentId;
     private static String disByteArray = "A6155549";
@@ -86,6 +90,20 @@ public class UserActivity extends AppCompatActivity {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
 
+
+
+        Button changeRadiationButton = findViewById(R.id.button_change_radiation);
+
+        changeRadiationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                byte[] buffer = {(byte)15};
+                int operation = 0;
+
+                determineOperation(operation, buffer);
+            }
+        });
 
         btnTest = findViewById(R.id.btnTest);
         Button btnWarningNotification = findViewById(R.id.button_warning_notification);
@@ -154,41 +172,10 @@ public class UserActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                //TODO : send in array to clock in
 
-                db.getUserInfo(currentUser.getCurrentUser().getUid()).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                //determineOperation();
 
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
-                                documentId = document.getId();
-                                check_RFID = Objects.requireNonNull(document.getData().get("RFID")).toString();
-                                userState = (Boolean) Objects.requireNonNull(document.getData().get("userstate"));
-                            }
-
-                            if (check_RFID.equals(disByteArray)) {
-                                if (userState) {
-                                    db.setUserClockInState(false, documentId);
-                                    byte[] byteResponse = new byte[] {0,0,0,1,0,0,0,1};
-                                    //myThreadConnected.write(byteResponse);
-
-                                }
-                                else {
-                                    db.setUserClockInState(true, documentId);
-                                    byte[] byteResponse = new byte[] {0,0,0,1,0,0,1,0};
-                                    //myThreadConnected.write(byteResponse);
-
-                                }
-                            }
-                        }
-                        else {
-                            byte[] byteResponse = new byte[] {0,0,0,1,0,0,0,0};
-                            //myThreadConnected.write(byteResponse);
-                            Log.w("Error", "Error getting documents.", task.getException());
-
-                        }
-                    }
-                });
 
             }
 
@@ -206,31 +193,82 @@ public class UserActivity extends AppCompatActivity {
 
         TextView timeInfo = findViewById(R.id.textview_time_remaining);
 
-        new CountDownTimer(time, 1000) {
 
-            public void onTick(long millisUntilFinished) {
+            if(mCountDownTimer != null){
 
-                long time = millisUntilFinished/1000;
-                long hours = time / 3600;
-                long minutes = (time % 3600) / 60;
-                long seconds = time % 60;
-                String timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-                timeInfo.setText(timeString);
-            }
-
-            public void onFinish() {
-                timeInfo.setText("Evacuate!!!");
-                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(UserActivity.this);
-                notificationManager.notify(5, builder.build());
-
-                byte[] byteResponse = new byte[] {0,0,1,0}; //system wide warning
-                //myThreadConnected.write(byteResponse);
+                mCountDownTimer.cancel();
 
             }
-        }.start();
+
+            mCountDownTimer = new CountDownTimer(time, 1000) {
+
+                public void onTick(long millisUntilFinished) {
+
+                    long time = millisUntilFinished/1000;
+                    long hours = time / 3600;
+                    long minutes = (time % 3600) / 60;
+                    long seconds = time % 60;
+                    String timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+                    timeInfo.setText(timeString);
+                }
+
+                public void onFinish() {
+                    timeInfo.setText("Evacuate!!!");
+                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(UserActivity.this);
+                    notificationManager.notify(5, builder.build());
+
+                    byte[] byteResponse = new byte[] {0,0,1,0}; //system wide warning
+                    //myThreadConnected.write(byteResponse);
+
+                }
+            }.start();
+
+
+
 
     }
 
+
+    private void clockInOrOut(){
+
+
+        db.getUserInfo(currentUser.getCurrentUser().getUid()).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                        documentId = document.getId();
+                        check_RFID = Objects.requireNonNull(document.getData().get("RFID")).toString();
+                        userState = (Boolean) Objects.requireNonNull(document.getData().get("userstate"));
+                    }
+
+                    if (check_RFID.equals(disByteArray)) {
+                        if (userState) {
+                            db.setUserClockInState(false, documentId);
+                            byte[] byteResponse = new byte[] {0,0,0,1,0,0,0,1};
+                            //myThreadConnected.write(byteResponse);
+
+                        }
+                        else {
+                            db.setUserClockInState(true, documentId);
+                            byte[] byteResponse = new byte[] {0,0,0,1,0,0,1,0};
+                            //myThreadConnected.write(byteResponse);
+
+                        }
+                    }
+                }
+                else {
+                    byte[] byteResponse = new byte[] {0,0,0,1,0,0,0,0};
+                    //myThreadConnected.write(byteResponse);
+                    Log.w("Error", "Error getting documents.", task.getException());
+
+                }
+            }
+        });
+
+
+    }
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -249,6 +287,17 @@ public class UserActivity extends AppCompatActivity {
     }
 
 
+    private void changeRadiationLevel(int radiationValue){
+
+        //= new BigInteger(information).intValue();
+
+
+
+        Log.d("new value", String.valueOf(radiationValue));
+
+        radiation.setRadiation(radiationValue);
+
+    }
 
     @Override
     protected void onDestroy() {
@@ -420,41 +469,54 @@ public class UserActivity extends AppCompatActivity {
 
         @Override
         public void run() {
-            byte[] buffer = new byte[1024];
-            int bytes;
+            byte[] operationBuffer = new byte[1024];
+            byte[] informationBuffer = new byte[1024];
+            int bytes = 0;
 
             String strRx = "";
 
+            byte[] buffer = new byte[1024];
+
             while (true) {
                 try {
-                    bytes = connectedInputStream.read(buffer);
+                    //bytes = connectedInputStream.read(operationBuffer, 1, 1);
 
-                    final String strReceived = new String(buffer, 0, bytes);
-                    final String strByteCnt = String.valueOf(bytes) + " bytes received.\n";
+                    //bytes = connectedInputStream.read(informationBuffer);
+                    //Log.d("Bytes received", String.valueOf(bytes));
 
-                    for(int i = 0; i < buffer.length; i++) {
-                        byte byteNumber = Array.getByte(bytes,i);
-                        recievedBytes.add(String.valueOf(byteNumber));
+                    //buffer[bytes] = (byte)connectedInputStream.read(buffer, 0, 1);
+                    // Send the obtained bytes to the UI Activity
+                    //if ((buffer[bytes] == '\n'))//random symbol
+
+
+                    byte currentByte;
+                    int wantedBytes = 0;
+
+                    int operation = (byte)connectedInputStream.read(buffer, 0, 1);
+
+                    if(operation == Operation.CLOCK_IN_OR_OUT ){
+
+                        wantedBytes = 2;
+
+                    }
+                    if(operation == Operation.NEW_RADIATION_LEVEL){
+
+                        wantedBytes = 4;
+
                     }
 
-                    byteProtocol = "";
-                    for(int i = 0; i < 4; i++){
-                        byteProtocol += recievedBytes.get(i);
+                    for(int i = 0; i < wantedBytes; i++){
+                        currentByte = (byte)connectedInputStream.read(buffer, 0, 1);
+                        buffer[bytes] = currentByte;
+
                     }
-
-                    switch(byteProtocol) {
-                        case "0000":
-                            //Clock in or clock out
-                        case "0100":
-                           //
-                        default:
-                            // code block
-                    }
+                    determineOperation(operation, buffer);
 
 
+                    //final String strReceived = new String(buffer, 0, bytes);
+                   // final String strByteCnt = String.valueOf(bytes) + " bytes received.\n";
 
-
-
+                    /*
                     runOnUiThread(new Runnable(){
 
                         @Override
@@ -462,6 +524,8 @@ public class UserActivity extends AppCompatActivity {
                             textStatus.append(strReceived);
                             textByteCnt.append(strByteCnt);
                         }});
+
+                     */
 
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
@@ -502,6 +566,44 @@ public class UserActivity extends AppCompatActivity {
 
 
 
+    public interface Operation {
+
+        public static final byte CLOCK_IN_OR_OUT = 0;
+        public static final byte NEW_RADIATION_LEVEL = 3;
+
+    }
+
+    private void determineOperation(int operation, byte[] buffer){
+
+
+        //byte[] input = { (byte)3, (byte)0, (byte)0, (byte)0, (byte)0 };
+
+
+        switch(operation) {
+            case Operation.CLOCK_IN_OR_OUT:
+
+                Log.d("operation", "inside clock in/out ");
+
+                //byte[] infoBuffer = new byte[1024];
+                //int infoBytes = connectedInputStream.read(infoBuffer);
+
+                //clockInOrOut(informationBuffer);
+
+
+                //Clock in or clock out
+            case Operation.NEW_RADIATION_LEVEL:
+                Log.d("operation", "inside radiation level");
+                int radiationValue = buffer[0];
+
+                changeRadiationLevel(radiationValue);
+
+            default:
+
+                // code block
+
+        }
+
+    }
 
 
 }
