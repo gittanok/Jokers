@@ -27,6 +27,7 @@ import androidx.core.app.NotificationManagerCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -47,8 +48,9 @@ public class UserActivity extends AppCompatActivity {
 
 
 
-
+    FirebaseAuth currentUser = FirebaseAuth.getInstance();
     DatabaseRFIDRepository db = new DatabaseRFIDRepository();
+
 
     private static String check_RFID;
     private static String documentId;
@@ -145,10 +147,6 @@ public class UserActivity extends AppCompatActivity {
                 }).start();
 
 
-
-
-
-
             }
         });
 
@@ -157,7 +155,7 @@ public class UserActivity extends AppCompatActivity {
             public void onClick(View v) {
 
 
-                db.getUserInfo("qpGCZ9QCMdh4AfwheTy7ShUNF").addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                db.getUserInfo(currentUser.getCurrentUser().getUid()).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
 
@@ -171,17 +169,23 @@ public class UserActivity extends AppCompatActivity {
                             if (check_RFID.equals(disByteArray)) {
                                 if (userState) {
                                     db.setUserClockInState(false, documentId);
-                                    //skicka tillbaka lämpligt protokoll till DIS
+                                    byte[] byteResponse = new byte[] {0,0,0,1,0,0,0,1};
+                                    //myThreadConnected.write(byteResponse);
+
                                 }
                                 else {
                                     db.setUserClockInState(true, documentId);
-                                    //skicka tillbaka lämpligt protokoll till DIS
+                                    byte[] byteResponse = new byte[] {0,0,0,1,0,0,1,0};
+                                    //myThreadConnected.write(byteResponse);
+
                                 }
                             }
                         }
                         else {
-                            Log.w("yeet", "Error getting documents.", task.getException());
-                            //skicka tillbaka lämpligt protokoll till DIS INGEN CONNECTIOn typ
+                            byte[] byteResponse = new byte[] {0,0,0,1,0,0,0,0};
+                            //myThreadConnected.write(byteResponse);
+                            Log.w("Error", "Error getting documents.", task.getException());
+
                         }
                     }
                 });
@@ -218,6 +222,9 @@ public class UserActivity extends AppCompatActivity {
                 timeInfo.setText("Evacuate!!!");
                 NotificationManagerCompat notificationManager = NotificationManagerCompat.from(UserActivity.this);
                 notificationManager.notify(5, builder.build());
+
+                byte[] byteResponse = new byte[] {0,0,1,0}; //system wide warning
+                //myThreadConnected.write(byteResponse);
 
             }
         }.start();
@@ -437,13 +444,9 @@ public class UserActivity extends AppCompatActivity {
 
                     switch(byteProtocol) {
                         case "0000":
-                            break;
-                        case "0001":
-                            break;
-                        case "0010":
-                            break;
-                        case "0011":
-                            break;
+                            //Clock in or clock out
+                        case "0100":
+                           //
                         default:
                             // code block
                     }
@@ -477,12 +480,12 @@ public class UserActivity extends AppCompatActivity {
         }
 
         public void write(byte[] buffer) {
-            try {
-                connectedOutputStream.write(buffer);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+                try {
+                    connectedOutputStream.write(buffer);
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
         }
 
         public void cancel() {
@@ -494,6 +497,8 @@ public class UserActivity extends AppCompatActivity {
             }
         }
     }
+
+
 
 
 
