@@ -89,6 +89,12 @@ public class UserActivity extends AppCompatActivity {
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
+        String address = getIntent().getExtras()
+                .getString(BluetoothActivity.DEVICE_ADDRESS);
+
+        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+        myThreadConnectBTdevice = new ThreadConnectBTdevice(device);
+        myThreadConnectBTdevice.start();
 
         Button changeRadiationButton = findViewById(R.id.button_change_radiation);
 
@@ -331,6 +337,8 @@ public class UserActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+
 
         // for when we get back to the userActivity from BluetoothActivity
         String address = data.getExtras()
