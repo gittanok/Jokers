@@ -36,11 +36,19 @@ public class LoginActivity extends AppCompatActivity {
         fAuth = FirebaseAuth.getInstance();
         mLoginBtn = findViewById(R.id.loginBtn);
 
+        String email1 = "dennisfram@hotmail.com";
+        String password1 = "123456789";
+
+        mEmail.setText(email1);
+        mPassword.setText(password1);
+
         mLoginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String email = mEmail.getText().toString().trim();
                 String password = mPassword.getText().toString().trim();
+
+
 
                 if(TextUtils.isEmpty(email)){
                     mEmail.setError("Email is Required.");

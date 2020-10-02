@@ -17,7 +17,7 @@ public class RadiationActivity {
     public boolean checkRadiationLimit(){
 
         exposure += radiation;
-        Log.d("radiation", String.valueOf(exposure));
+        Log.d("exposure to radiation:", String.valueOf(exposure));
         if(exposure <= radiationLimit){
             return false;
         }
@@ -44,7 +44,7 @@ public class RadiationActivity {
 
         radiation = newRadiation;
         valuesChanged = true;
-        Log.d("radiation", "radiation level changed");
+        Log.d("radiation level changed to:", String.valueOf(newRadiation));
 
     }
 

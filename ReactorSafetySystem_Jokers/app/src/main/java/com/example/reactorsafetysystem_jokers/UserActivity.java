@@ -3,6 +3,7 @@ package com.example.reactorsafetysystem_jokers;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
@@ -67,7 +68,7 @@ public class UserActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_BT = 1;
 
 
-    TextView textStatus, textByteCnt;
+    TextView textByteCnt;
 
     Button btnTest;
 
@@ -80,6 +81,7 @@ public class UserActivity extends AppCompatActivity {
     BluetoothAdapter mBluetoothAdapter;
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,11 +90,13 @@ public class UserActivity extends AppCompatActivity {
         createNotificationChannel();
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        String address = getIntent().getExtras()
-                .getString(BluetoothActivity.DEVICE_ADDRESS);
+        Intent intent = getIntent();
+        String address = intent.getStringExtra(BluetoothActivity.DEVICE_ADDRESS);
 
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+
+        myUUID = UUID.fromString(UUID_STRING_WELL_KNOWN_SPP);
+
         myThreadConnectBTdevice = new ThreadConnectBTdevice(device);
         myThreadConnectBTdevice.start();
 
@@ -103,7 +107,7 @@ public class UserActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 byte[] buffer = {(byte)15};
-                int operation = 0;
+                int operation = 4;
 
                 determineOperation(operation, buffer);
             }
@@ -137,7 +141,7 @@ public class UserActivity extends AppCompatActivity {
 
         });
 
-        myUUID = UUID.fromString(UUID_STRING_WELL_KNOWN_SPP);
+
 
 
 
@@ -183,7 +187,6 @@ public class UserActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                Log.d("sleep","inside while loop for warning");
             }
 
         }).start();
@@ -334,6 +337,7 @@ public class UserActivity extends AppCompatActivity {
         }
     }
 
+    /*
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -348,7 +352,7 @@ public class UserActivity extends AppCompatActivity {
         myThreadConnectBTdevice = new ThreadConnectBTdevice(device);
         myThreadConnectBTdevice.start();
 
-        /*
+
         if (requestCode == REQUEST_ENABLE_BT) {
             if (resultCode == Activity.RESULT_OK) {
                 setup();
@@ -359,9 +363,11 @@ public class UserActivity extends AppCompatActivity {
                 finish();
             }
         }
-        */
+
 
     }
+
+    */
 
     //Called in ThreadConnectBTdevice once connect successed
     //to start ThreadConnected
@@ -385,33 +391,27 @@ public class UserActivity extends AppCompatActivity {
 
         private ThreadConnectBTdevice(BluetoothDevice device) {
             bluetoothDevice = device;
+            Log.d("ThreadConnectBtdevice", String.valueOf(device));
 
             try {
                 bluetoothSocket = device.createRfcommSocketToServiceRecord(myUUID);
-                textStatus.setText("bluetoothSocket: \n" + bluetoothSocket);
             } catch (IOException e) {
+                Log.d("in catch", "error");
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+
         }
 
         @Override
         public void run() {
             boolean success = false;
+            Log.d("socket", String.valueOf(bluetoothSocket.isConnected()));
             try {
                 bluetoothSocket.connect();
                 success = true;
             } catch (IOException e) {
                 e.printStackTrace();
-
-                final String eMessage = e.getMessage();
-                runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        textStatus.setText("something wrong bluetoothSocket.connect():startThreadConnectedn" + eMessage);
-                    }
-                });
 
                 try {
                     bluetoothSocket.close();
@@ -422,27 +422,6 @@ public class UserActivity extends AppCompatActivity {
             }
 
             if(success){
-                //connect successful
-                final String msgconnected = "connect successful:\n"
-                        + "BluetoothSocket: " + bluetoothSocket + "\n"
-                        + "BluetoothDevice: " + bluetoothDevice;
-
-                /*
-                runOnUiThread(new Runnable() {
-
-
-                    @Override
-                    public void run() {
-                        textStatus.setText("");
-                        textByteCnt.setText("");
-                        Toast.makeText(MainActivity.this, msgconnected, Toast.LENGTH_LONG).show();
-
-                        //listViewPairedDevice.setVisibility(View.GONE);
-                        //inputPane.setVisibility(View.VISIBLE);
-                    }
-                });
-
-                 */
 
                 startThreadConnected(bluetoothSocket);
 
@@ -483,6 +462,8 @@ public class UserActivity extends AppCompatActivity {
             InputStream in = null;
             OutputStream out = null;
 
+            Log.d("Threadconnect", "is initialized");
+
             try {
                 in = socket.getInputStream();
                 out = socket.getOutputStream();
@@ -497,84 +478,50 @@ public class UserActivity extends AppCompatActivity {
 
         @Override
         public void run() {
-            byte[] operationBuffer = new byte[1024];
-            byte[] informationBuffer = new byte[1024];
             int bytes = 0;
 
             String strRx = "";
 
             byte[] buffer = new byte[1024];
+            int operation;
 
             while (true) {
                 try {
-                    //bytes = connectedInputStream.read(operationBuffer, 1, 1);
-
-                    //bytes = connectedInputStream.read(informationBuffer);
-                    //Log.d("Bytes received", String.valueOf(bytes));
-
-                    //buffer[bytes] = (byte)connectedInputStream.read(buffer, 0, 1);
-                    // Send the obtained bytes to the UI Activity
-                    //if ((buffer[bytes] == '\n'))//random symbol
-
 
                     byte currentByte;
                     int informationByteSize = 0;
 
-                    //TODO test this shit
-                    //byte yeet = (byte)12;
-                    //char hmm = (char) yeet;
-                        //Log.d("e", String.valueOf(yeet));
 
+                    connectedInputStream.read(buffer, 0, 1);
 
+                    operation = buffer[0];
 
-                    int operation = (byte)connectedInputStream.read(buffer, 0, 1);
+                    Log.d("inside try block", String.valueOf(operation));
 
                     if(operation == Operation.CLOCK_IN_OR_OUT ){
 
-                        informationByteSize = 4;
+                        Log.d("Operation, Clock", String.valueOf(operation));
 
+                        informationByteSize = 4;
                     }
                     if(operation == Operation.NEW_RADIATION_LEVEL){
 
-                        informationByteSize = 1;
+                        Log.d("Operation, radiation", String.valueOf(operation));
 
+                        informationByteSize = 1;
                     }
 
                     for(int i = 0; i < informationByteSize; i++){
 
-                        currentByte = (byte)connectedInputStream.read(buffer, 0, 1);
-                        buffer[bytes] = currentByte;
-
+                            connectedInputStream.read(buffer, 0, 1);
+                            buffer[i] = buffer[0];
                     }
                     determineOperation(operation, buffer);
-
-
-                    //final String strReceived = new String(buffer, 0, bytes);
-                   // final String strByteCnt = String.valueOf(bytes) + " bytes received.\n";
-
-                    /*
-                    runOnUiThread(new Runnable(){
-
-                        @Override
-                        public void run() {
-                            textStatus.append(strReceived);
-                            textByteCnt.append(strByteCnt);
-                        }});
-
-                     */
 
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
 
-                    final String msgConnectionLost = "Connection lost:\n"
-                            + e.getMessage();
-                    runOnUiThread(new Runnable(){
-
-                        @Override
-                        public void run() {
-                            textStatus.setText(msgConnectionLost);
-                        }});
                 }
             }
         }
@@ -598,14 +545,10 @@ public class UserActivity extends AppCompatActivity {
         }
     }
 
-
-
-
-
     public interface Operation {
 
         byte CLOCK_IN_OR_OUT = 0;
-        byte NEW_RADIATION_LEVEL = 3;
+        byte NEW_RADIATION_LEVEL = 4;
 
     }
 
@@ -622,13 +565,10 @@ public class UserActivity extends AppCompatActivity {
 
     private void sendResponse(byte[] byteResponse){
 
-
-        //myThreadConnected.write(byteResponse);
-
+        myThreadConnected.write(byteResponse);
     }
 
     private void determineOperation(int operation, byte[] buffer){
-
 
         switch(operation) {
             case Operation.CLOCK_IN_OR_OUT:
@@ -643,7 +583,7 @@ public class UserActivity extends AppCompatActivity {
             case Operation.NEW_RADIATION_LEVEL:
                 Log.d("operation", "inside radiation level");
                 int radiationValue = buffer[0];
-
+                Log.d("buffer value for radiation", String.valueOf(radiationValue));
                 changeRadiationLevel(radiationValue);
 
                 break;

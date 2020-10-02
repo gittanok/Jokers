@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -29,11 +30,12 @@ public class BluetoothActivity extends AppCompatActivity {
     public static String DEVICE_ADDRESS = "device_address";
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
-        super.onCreate(savedInstanceState, persistentState);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth);
 
         listViewPairedDevice = (ListView)findViewById(R.id.pairedlist);
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
     }
 
@@ -81,12 +83,14 @@ public class BluetoothActivity extends AppCompatActivity {
                             Toast.LENGTH_LONG).show();
 
 
-                    //Intent intent = new Intent();
-                    //intent.putExtra(DEVICE_ADDRESS, device);
+                    Intent intent = new Intent(new Intent(getApplicationContext(), UserActivity.class));
+                    intent.putExtra(DEVICE_ADDRESS, device.getAddress());
+                    Log.d("Device", device.toString());
 
                     //TODO check if you get to the next activity as intended, should probably be moved to ONCREATE.
                     // Set result and finish this Activity
-                    startActivity(new Intent(getApplicationContext(), UserActivity.class));
+                    startActivity(intent);
+
                     //setResult(Activity.RESULT_OK, intent);
                     finish();
 
