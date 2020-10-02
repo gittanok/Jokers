@@ -3,21 +3,14 @@ package com.example.reactorsafetysystem_jokers;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.Intent;
-import android.media.AudioAttributes;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,17 +29,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class UserActivity extends AppCompatActivity {
 
@@ -57,6 +43,7 @@ public class UserActivity extends AppCompatActivity {
 
 
     private CountDownTimer mCountDownTimer;
+    private CountDownTimer mCountDownTimer2;
     private static String check_RFID;
     private static String documentId;
     private static String disByteArray = "A6155549";
@@ -88,7 +75,7 @@ public class UserActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user);
 
         createNotificationChannel();
-
+/*
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Intent intent = getIntent();
         String address = intent.getStringExtra(BluetoothActivity.DEVICE_ADDRESS);
@@ -100,6 +87,8 @@ public class UserActivity extends AppCompatActivity {
         myThreadConnectBTdevice = new ThreadConnectBTdevice(device);
         myThreadConnectBTdevice.start();
 
+
+ */
         Button changeRadiationButton = findViewById(R.id.button_change_radiation);
 
         changeRadiationButton.setOnClickListener(new View.OnClickListener() {
@@ -157,13 +146,39 @@ public class UserActivity extends AppCompatActivity {
                         .bigText("Abort reactor boom boom"))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
+
         new Thread(() -> {
+
+            int[] intervals = radiation.getIntervals();
+
+            Log.d("vallarra", String.valueOf(intervals[0]));
+            Log.d("vallarra", String.valueOf(intervals[1]));
+            Log.d("vallarra", String.valueOf(intervals[2]));
 
             boolean warning = false;
 
             while(!warning) {
 
                 warning = radiation.checkRadiationLimit();
+
+                int currentMaxExposure = radiation.getRadiationExposure();
+
+                Log.d("currentmax", String.valueOf(currentMaxExposure));
+
+                for (int i = 0; i < intervals.length; i++) {
+                    if (currentMaxExposure > intervals[i]) {
+                        Log.d("inside warninginter", String.valueOf(currentMaxExposure));
+                        i+=1;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                notifyWarningByInterval();
+                            }
+                        });
+                    }
+                }
+
+
 
                 if (radiation.getValuesChanged()) {
 
@@ -207,7 +222,6 @@ public class UserActivity extends AppCompatActivity {
     private void updateTimeRemaining(int timeRemaining, NotificationCompat.Builder builder){
 
         long time = timeRemaining * 1000;
-
         TextView timeInfo = findViewById(R.id.textview_time_remaining);
 
 
@@ -220,13 +234,13 @@ public class UserActivity extends AppCompatActivity {
             mCountDownTimer = new CountDownTimer(time, 1000) {
 
                 public void onTick(long millisUntilFinished) {
-
                     long time = millisUntilFinished/1000;
                     long hours = time / 3600;
                     long minutes = (time % 3600) / 60;
                     long seconds = time % 60;
                     String timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds);
                     timeInfo.setText(timeString);
+
                 }
 
                 public void onFinish() {
@@ -241,11 +255,24 @@ public class UserActivity extends AppCompatActivity {
 
                 }
             }.start();
+    }
+
+    private void notifyWarningByInterval() {
+
+        final NotificationCompat.Builder builder2 = new NotificationCompat.Builder(this, "channel1")
+                .setSmallIcon(R.drawable.ic_warning_notification)
+                .setContentTitle("WARNING CHECK TIME")
+                .setContentText("Time is about to run out")
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText("Be careful"))
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
 
-
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(UserActivity.this);
+        notificationManager.notify(5, builder2.build());
 
     }
+
 
 
     private void clockInOrOut(byte[] RFID){
@@ -324,7 +351,7 @@ public class UserActivity extends AppCompatActivity {
 
         Log.d("new value", String.valueOf(radiationValue));
 
-        radiation.setRadiation(radiationValue);
+        radiation.setCurrentRadiation(radiationValue);
 
     }
 
@@ -565,7 +592,7 @@ public class UserActivity extends AppCompatActivity {
 
     private void sendResponse(byte[] byteResponse){
 
-        myThreadConnected.write(byteResponse);
+   //     myThreadConnected.write(byteResponse);
     }
 
     private void determineOperation(int operation, byte[] buffer){
