@@ -545,13 +545,15 @@ public class UserActivity extends AppCompatActivity {
 
                     Log.d("inside try block", String.valueOf(operation));
 
+                    //TODO: include all operations
+
                     if(operation == Operation.CLOCK_IN_OR_OUT ){
 
                         Log.d("Operation, Clock", String.valueOf(operation));
 
                         informationByteSize = 4;
                     }
-                    if(operation == Operation.NEW_RADIATION_LEVEL){
+                    if(operation == Operation.NEW_RADIATION_LEVEL || operation == Operation.SET_PROTECTIVE_GEAR || operation == Operation.SET_ROOM){
 
                         Log.d("Operation, radiation", String.valueOf(operation));
 
@@ -597,6 +599,7 @@ public class UserActivity extends AppCompatActivity {
         byte CLOCK_IN_OR_OUT = 0;
         byte NEW_RADIATION_LEVEL = 4;
         byte SET_PROTECTIVE_GEAR = 5;
+        byte SET_ROOM = 6;
 
     }
 
@@ -638,9 +641,13 @@ public class UserActivity extends AppCompatActivity {
 
             case Operation.SET_PROTECTIVE_GEAR:
                 Log.d("operation", "inside protective gear changed");
-                setProtectiveGear(buffer[0]);
+                int gear = buffer[0];
+                setProtectiveGear(gear);
 
-
+            case Operation.SET_ROOM:
+                Log.d("operation", "inside protective gear changed");
+                int room = buffer[0];
+                setRoom(room);
 
             default:
 
@@ -651,12 +658,15 @@ public class UserActivity extends AppCompatActivity {
 
     }
 
-    private void setProtectiveGear(byte gear) {
+    private void setProtectiveGear(int gear) {
 
         radiation.setProtectiveGear(gear);
-
     }
 
+    private void setRoom(int room){
+
+        radiation.setRoom(room);
+    }
 
 }
 

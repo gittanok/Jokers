@@ -7,7 +7,7 @@ public class RadiationActivity {
 
     int currentRadiation = 30;
     int protectiveGear = 1;
-    int rc = 1;
+    double roomCoefficient = 1;
     int totalExposure = 0;
     int radiationLimit = 5000; //500000
     boolean valuesChanged = true;
@@ -26,7 +26,7 @@ public class RadiationActivity {
     }
 
     public int timeRemaining(){
-        int timeRemaining = (radiationLimit - totalExposure) / ((currentRadiation * rc) / protectiveGear);
+        int timeRemaining = (int) ((radiationLimit - totalExposure) / ((currentRadiation * roomCoefficient) / protectiveGear));
         Log.d("Time", "Has changed ");
 
         return  timeRemaining;
@@ -75,6 +75,22 @@ public class RadiationActivity {
 
 
         return intervalArray;
+    }
+
+    public void setRoom(int room) {
+
+        if (room == Room.breakRoom){
+            roomCoefficient = 0.1;
+        }
+        else if(room == Room.controlRoom){
+            roomCoefficient = 0.5;
+        }
+        else if(room == Room.reactorRoom){
+            roomCoefficient = 1.6;
+        }
+
+        valuesChanged = true;
+
     }
 
     public interface Gear {
