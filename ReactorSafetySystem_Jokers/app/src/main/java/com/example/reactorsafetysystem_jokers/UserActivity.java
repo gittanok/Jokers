@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -43,7 +44,7 @@ public class UserActivity extends AppCompatActivity {
 
 
     private CountDownTimer mCountDownTimer;
-    private CountDownTimer mCountDownTimer2;
+    private CountDownTimer consoleCountDownTimer;
     private static String check_RFID;
     private static String documentId;
     private static String disByteArray = "A6155549";
@@ -75,7 +76,7 @@ public class UserActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user);
 
         createNotificationChannel();
-/*
+
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Intent intent = getIntent();
         String address = intent.getStringExtra(BluetoothActivity.DEVICE_ADDRESS);
@@ -88,14 +89,14 @@ public class UserActivity extends AppCompatActivity {
         myThreadConnectBTdevice.start();
 
 
- */
+
         Button changeRadiationButton = findViewById(R.id.button_change_radiation);
 
         changeRadiationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                byte[] buffer = {(byte)15};
+                byte[] buffer = {(byte)100};
                 int operation = 4;
 
                 determineOperation(operation, buffer);
@@ -149,39 +150,31 @@ public class UserActivity extends AppCompatActivity {
 
         new Thread(() -> {
 
+            //TODO: should this thread also handle the update of sending time every minute, and everytime radiation is sent?
+
             int[] intervals = radiation.getIntervals();
 
-            Log.d("vallarra", String.valueOf(intervals[0]));
-            Log.d("vallarra", String.valueOf(intervals[1]));
-            Log.d("vallarra", String.valueOf(intervals[2]));
-
             boolean warning = false;
+            int i = 0;
 
             while(!warning) {
 
                 warning = radiation.checkRadiationLimit();
 
-                int currentMaxExposure = radiation.getRadiationExposure();
+                int currentRadiationExposure = radiation.getRadiationExposure();
 
-                Log.d("currentmax", String.valueOf(currentMaxExposure));
 
-                for (int i = 0; i < intervals.length; i++) {
-                    if (currentMaxExposure > intervals[i]) {
-                        Log.d("inside warninginter", String.valueOf(currentMaxExposure));
-                        i+=1;
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                notifyWarningByInterval();
-                            }
-                        });
-                    }
+                if ( i < intervals.length && currentRadiationExposure > intervals[i]) {
+                    i+=1;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            notifyWarningByInterval();
+                        }
+                    });
                 }
 
-
-
                 if (radiation.getValuesChanged()) {
-
                     radiation.setValuesChanged(false);
                     int timeRemaining = radiation.timeRemaining();
 
@@ -192,7 +185,13 @@ public class UserActivity extends AppCompatActivity {
                         }
                     });
 
-                    convertTimeRemaining(timeRemaining);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            sendTimeRemaining(timeRemaining);
+                        }
+                    });
+
 
                 }
 
@@ -209,13 +208,29 @@ public class UserActivity extends AppCompatActivity {
 
     }
 
-    private void convertTimeRemaining(int timeRemaining) {
-        long hours = timeRemaining / 3600;
-        long minutes = (timeRemaining % 3600) / 60;
+    private void sendTimeRemaining(int timeRemaining) {
 
-        byte[] sendTimeToConsole = {Responses.TIME_LEFT, (byte) hours, (byte) minutes};
+        long time = timeRemaining * 1000;
 
-        sendResponse(sendTimeToConsole);
+        if(consoleCountDownTimer != null){
+            consoleCountDownTimer.cancel();
+        }
+
+        consoleCountDownTimer = new CountDownTimer(time, 60000) {
+
+            public void onTick(long millisUntilFinished) {
+                long time = millisUntilFinished/1000;
+                long hours = time / 3600;
+                long minutes = (time % 3600) / 60;
+
+                byte[] sendTimeToConsole = {Responses.TIME_LEFT, (byte) hours, (byte) minutes};
+                sendResponse(sendTimeToConsole);
+
+            }
+            public void onFinish() {
+
+            }
+        }.start();
     }
 
 
@@ -250,14 +265,17 @@ public class UserActivity extends AppCompatActivity {
 
 
                     sendResponse(Responses.WARNING);
-                    byte[] byteResponse = new byte[] {0,0,1,0}; //system wide warning
-                    //myThreadConnected.write(byteResponse);
+
 
                 }
             }.start();
     }
 
     private void notifyWarningByInterval() {
+
+
+
+        Log.d("interval warninge", "this should only appear 3 times");
 
         final NotificationCompat.Builder builder2 = new NotificationCompat.Builder(this, "channel1")
                 .setSmallIcon(R.drawable.ic_warning_notification)
@@ -267,6 +285,7 @@ public class UserActivity extends AppCompatActivity {
                         .bigText("Be careful"))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
+        builder2.setProgress(100, 40, false);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(UserActivity.this);
         notificationManager.notify(5, builder2.build());
@@ -290,6 +309,7 @@ public class UserActivity extends AppCompatActivity {
 
         }*/
 
+        //TODO: change so that the oncoming RFID is used.
 
         for(int i = 0; i < bytes.length; i++) {
             byte byteNumber = Array.getByte(bytes,i);
@@ -311,11 +331,11 @@ public class UserActivity extends AppCompatActivity {
                     if (check_RFID.equals( disByteArray )) {
                         if (userState) {
                             db.setUserClockInState(false, documentId);
-                            sendResponse(new byte[] {Responses.CLOCK_IN, Responses.CLOCK_OUT_SUCCESSFULL});
+                            sendResponse(new byte[] {Responses.CLOCK_IN, Responses.CLOCK_OUT_SUCCESSFUL});
                         }
                         else {
                             db.setUserClockInState(true, documentId);
-                            sendResponse(new byte[] {Responses.CLOCK_IN, Responses.CLOCK_IN_SUCCESSFULL});
+                            sendResponse(new byte[] {Responses.CLOCK_IN, Responses.CLOCK_IN_SUCCESSFUL});
                         }
                     }
                 }
@@ -576,14 +596,15 @@ public class UserActivity extends AppCompatActivity {
 
         byte CLOCK_IN_OR_OUT = 0;
         byte NEW_RADIATION_LEVEL = 4;
+        byte SET_PROTECTIVE_GEAR = 5;
 
     }
 
     public interface Responses {
 
         byte CLOCK_IN = 1;
-        byte CLOCK_IN_SUCCESSFULL = 2;
-        byte CLOCK_OUT_SUCCESSFULL = 1;
+        byte CLOCK_IN_SUCCESSFUL = 2;
+        byte CLOCK_OUT_SUCCESSFUL = 1;
         byte REQUEST_FAILED = 0;
         byte[] WARNING = {(byte)2};
         byte TIME_LEFT = 3;
@@ -592,7 +613,7 @@ public class UserActivity extends AppCompatActivity {
 
     private void sendResponse(byte[] byteResponse){
 
-   //     myThreadConnected.write(byteResponse);
+        myThreadConnected.write(byteResponse);
     }
 
     private void determineOperation(int operation, byte[] buffer){
@@ -615,12 +636,24 @@ public class UserActivity extends AppCompatActivity {
 
                 break;
 
+            case Operation.SET_PROTECTIVE_GEAR:
+                Log.d("operation", "inside protective gear changed");
+                setProtectiveGear(buffer[0]);
+
+
+
             default:
 
                 // code block
                 break;
 
         }
+
+    }
+
+    private void setProtectiveGear(byte gear) {
+
+        radiation.setProtectiveGear(gear);
 
     }
 

@@ -6,7 +6,7 @@ public class RadiationActivity {
 
 
     int currentRadiation = 30;
-    int pc = 1;
+    int protectiveGear = 1;
     int rc = 1;
     int totalExposure = 0;
     int radiationLimit = 5000; //500000
@@ -26,14 +26,21 @@ public class RadiationActivity {
     }
 
     public int timeRemaining(){
-        int timeRemaining = (radiationLimit - totalExposure) / ((currentRadiation * rc) / pc);
+        int timeRemaining = (radiationLimit - totalExposure) / ((currentRadiation * rc) / protectiveGear);
         Log.d("Time", "Has changed ");
 
         return  timeRemaining;
     }
 
-    public void setPc(int newPc){
-        pc = newPc;
+    public void setProtectiveGear(int gear){
+
+        if (gear == Gear.clothes){
+            protectiveGear = 1;
+        }
+        else if(gear == Gear.hazmatSuit){
+            protectiveGear = 5;
+        }
+
         valuesChanged = true;
     }
 
@@ -69,4 +76,19 @@ public class RadiationActivity {
 
         return intervalArray;
     }
+
+    public interface Gear {
+
+        int clothes = 1;
+        int hazmatSuit = 2;
+    }
+
+    public interface Room {
+
+        int breakRoom = 1;
+        int controlRoom = 2;
+        int reactorRoom = 3;
+    }
+
+
 }

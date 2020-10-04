@@ -23,14 +23,27 @@
         android:text="Warning"
         app:layout_constraintBottom_toTopOf="@+id/btnTest"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.537" />
+
+    <ProgressBar
+        android:id="@+id/progress_radiation"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="108dp"
+        android:layout_height="23dp"
+        android:progress="25"
+        app:layout_constraintBottom_toTopOf="@+id/button_warning_notification"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textview_time_remaining" />
 
     <TextView
         android:id="@+id/textview_time_remaining"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="28dp"
+        android:layout_marginBottom="76dp"
         android:text="time"
         app:layout_constraintBottom_toTopOf="@+id/button_warning_notification"
         app:layout_constraintEnd_toEndOf="parent"

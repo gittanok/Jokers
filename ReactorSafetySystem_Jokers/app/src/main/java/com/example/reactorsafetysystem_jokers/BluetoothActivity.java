@@ -44,14 +44,14 @@ public class BluetoothActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-/*
+
         //Turn ON BlueTooth if it is OFF
         if (!bluetoothAdapter.isEnabled()) {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
         }
-*/
-    //    setup();
+
+        setup();
 
     }
 
