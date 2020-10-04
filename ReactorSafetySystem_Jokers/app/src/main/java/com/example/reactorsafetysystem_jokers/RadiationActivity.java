@@ -4,7 +4,6 @@ import android.util.Log;
 
 public class RadiationActivity {
 
-
     int currentRadiation = 30;
     int protectiveGear = 1;
     double roomCoefficient = 1;
@@ -13,11 +12,9 @@ public class RadiationActivity {
     boolean valuesChanged = true;
 
 
-
-    public boolean checkRadiationLimit(){
-
+    public boolean checkRadiationLimit() {
         totalExposure += currentRadiation;
-        Log.d("exposure to radiation:", String.valueOf(totalExposure));
+
         if(totalExposure <= radiationLimit){
             return false;
         }
@@ -25,9 +22,8 @@ public class RadiationActivity {
 
     }
 
-    public int timeRemaining(){
+    public int timeRemaining() {
         int timeRemaining = (int) ((radiationLimit - totalExposure) / ((currentRadiation * roomCoefficient) / protectiveGear));
-        Log.d("Time", "Has changed ");
 
         return  timeRemaining;
     }
@@ -52,7 +48,6 @@ public class RadiationActivity {
 
         currentRadiation = newRadiation;
         valuesChanged = true;
-        Log.d("radiation level changed to:", String.valueOf(newRadiation));
 
     }
 
@@ -61,18 +56,15 @@ public class RadiationActivity {
     }
 
     public void setValuesChanged(boolean valuesChanged) {
-        Log.d("values Changed", "this should appear twice");
         this.valuesChanged = valuesChanged;
     }
 
     public int[] getIntervals() {
-
         int seventyFive = (int) (radiationLimit * 0.75);
         int fifty = (int) (radiationLimit * 0.50);
         int twentyFive = (int) (radiationLimit * 0.25);
 
         int[] intervalArray = new int[] {twentyFive, fifty, seventyFive };
-
 
         return intervalArray;
     }

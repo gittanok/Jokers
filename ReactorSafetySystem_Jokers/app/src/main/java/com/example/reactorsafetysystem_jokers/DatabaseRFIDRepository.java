@@ -14,20 +14,11 @@ public class DatabaseRFIDRepository {
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-
     public Task<QuerySnapshot> getUserInfo(String userId) {
-
         return db.collection("users").whereEqualTo("userId",userId).get();
-
     }
 
     public void setUserClockInState(Boolean flag, String documentId) {
         db.collection("users").document(documentId).update("userstate", flag);
     }
-
-    public String getShit(){
-
-        return "shit";
-    }
-
 }
