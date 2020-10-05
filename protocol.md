@@ -7,3 +7,4 @@ Operation | Data | Description
 0000 0100 | Radiation level (1-byte). Value between 1-100. | Simulated radiation level. From safety console to mobile device.
 0000 0101 | Room (1-byte). 0000 0000 = Break room, 0000 0001 = Control room, 0000 0010 = Reactor room. | Change room. From safety console to mobile device.
 0000 0110 | Equipped (1-byte). 0000 0001 = Equipped, 0000 0000 = Unequipped. | Equip or unequip hazmat suit. From safety console to mobile device.
+0000 0111 | Radiation exposure (1-byte). Represented as an integer. | Radiation exposure. From mobile device to safety console.
