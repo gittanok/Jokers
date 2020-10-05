@@ -76,7 +76,7 @@ public class UserActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user);
 
         createNotificationChannel();
-
+/*
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Intent intent = getIntent();
         String address = intent.getStringExtra(BluetoothActivity.DEVICE_ADDRESS);
@@ -87,7 +87,7 @@ public class UserActivity extends AppCompatActivity {
 
         myThreadConnectBTdevice = new ThreadConnectBTdevice(device);
         myThreadConnectBTdevice.start();
-
+*/
 
 
         Button changeRadiationButton = findViewById(R.id.button_change_radiation);
@@ -129,9 +129,19 @@ public class UserActivity extends AppCompatActivity {
 
             }
 
+
         });
 
+        Button btnUserHistory = findViewById(R.id.button_user_history);
 
+        btnUserHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                startActivity(new Intent(getApplicationContext(), UserHistoryActivity.class) );
+
+            }
+        });
 
 
 
@@ -330,10 +340,14 @@ public class UserActivity extends AppCompatActivity {
 
                     if (check_RFID.equals( disByteArray )) {
                         if (userState) {
+
+                            db.addClockOutHistory(currentUser.getCurrentUser().getUid(), userState);
                             db.setUserClockInState(false, documentId);
                             sendResponse(new byte[] {Responses.CLOCK_IN, Responses.CLOCK_OUT_SUCCESSFUL});
                         }
                         else {
+
+                            db.addClockInHistory(currentUser.getCurrentUser().getUid(), userState);
                             db.setUserClockInState(true, documentId);
                             sendResponse(new byte[] {Responses.CLOCK_IN, Responses.CLOCK_IN_SUCCESSFUL});
                         }
@@ -616,7 +630,7 @@ public class UserActivity extends AppCompatActivity {
 
     private void sendResponse(byte[] byteResponse){
 
-        myThreadConnected.write(byteResponse);
+        //myThreadConnected.write(byteResponse);
     }
 
     private void determineOperation(int operation, byte[] buffer){
