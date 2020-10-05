@@ -43,8 +43,8 @@ public class UserHistoryActivity extends AppCompatActivity {
         final ListView list_history = findViewById(R.id.list_history);
         final ListView list_history2 = findViewById(R.id.list_history2);
 
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, arrayList);
-        ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, arrayList2);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this,R.layout.row, arrayList);
+        ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<String>(this,R.layout.row, arrayList2);
 
         db.getUserClockInHistory(currentUser.getCurrentUser().getUid()).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
