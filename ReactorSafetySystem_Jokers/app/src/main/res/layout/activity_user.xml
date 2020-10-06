@@ -54,10 +54,11 @@
         android:id="@+id/button_change_radiation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="136dp"
+        android:layout_marginBottom="156dp"
         android:text="change radiation"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.46"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
@@ -67,7 +68,54 @@
         android:text="UserHistory"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.922"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button_change_radiation" />
+        app:layout_constraintTop_toBottomOf="@+id/button_change_radiation"
+        app:layout_constraintVertical_bias="0.759" />
+
+    <Button
+        android:id="@+id/button:change_pc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="change pc"
+        app:layout_constraintBottom_toTopOf="@+id/btnTest"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_warning_notification" />
+
+    <Button
+        android:id="@+id/button_control_room"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="control room"
+        app:layout_constraintBottom_toTopOf="@+id/button_change_radiation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.478"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnTest"
+        app:layout_constraintVertical_bias="0.155" />
+
+    <Button
+        android:id="@+id/button_break_room"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Break room"
+        app:layout_constraintBottom_toTopOf="@+id/button_change_radiation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.481"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_control_room" />
+
+    <Button
+        android:id="@+id/button_reactor_room"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reactor room"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.48"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_change_radiation"
+        app:layout_constraintVertical_bias="0.324" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

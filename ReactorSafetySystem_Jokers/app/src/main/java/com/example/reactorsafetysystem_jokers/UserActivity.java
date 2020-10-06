@@ -257,7 +257,7 @@ public class UserActivity extends AppCompatActivity {
 
                 public void onTick(long millisUntilFinished) {
 
-                    if (!clockedIn) {
+                    if (!clockedIn) { //TODO: why check this everytime? why not run a function when we check out that deletes our timers?
                         radiation.setValuesChanged(true);
                         timeInfo.setText("Have a nice day");
                         radiation.totalExposure = 0;
@@ -351,7 +351,6 @@ public class UserActivity extends AppCompatActivity {
                     if (check_RFID.equals( disByteArray )) {
                         if (userState) {
                             db.addClockOutHistory(currentUser.getCurrentUser().getUid(), userState);
-
                             db.setUserClockInState(false, documentId);
                             clockedIn = false;
                             sendResponse(new byte[] {Responses.CLOCK_IN, Responses.CLOCK_OUT_SUCCESSFUL});
@@ -364,7 +363,7 @@ public class UserActivity extends AppCompatActivity {
                             clockedIn = true;
                             sendResponse(new byte[] {Responses.CLOCK_IN, Responses.CLOCK_IN_SUCCESSFUL});
                         }
-                        prepareWarning();
+                        prepareWarning(); //TODO: this should only run when we clock in?
                     }
                 }
                 else {
@@ -655,8 +654,6 @@ public class UserActivity extends AppCompatActivity {
                 Log.d("operation", "inside clock in/out ");
 
                 clockInOrOut(buffer);
-                prepareWarning();
-
                 break;
 
             case Operation.NEW_RADIATION_LEVEL:
