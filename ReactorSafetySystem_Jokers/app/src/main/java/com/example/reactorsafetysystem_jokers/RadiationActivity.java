@@ -28,17 +28,7 @@ public class RadiationActivity {
         return  timeRemaining;
     }
 
-    public void setProtectiveGear(int gear){
 
-        if (gear == Gear.clothes){
-            protectiveGear = 1;
-        }
-        else if(gear == Gear.hazmatSuit){
-            protectiveGear = 5;
-        }
-
-        valuesChanged = true;
-    }
 
     public int getRadiationExposure() {
         return totalExposure;
@@ -85,17 +75,42 @@ public class RadiationActivity {
 
     }
 
+    public void setProtectiveGear(int gear){
+
+        if (gear == Gear.clothes){
+            protectiveGear = 1;
+        }
+        else if(gear == Gear.hazmatSuit){
+            protectiveGear = 5;
+        }
+
+        valuesChanged = true;
+    }
+
+    public double getRoomCoefficient() {
+
+        return  roomCoefficient;
+    }
+
+    public int getProtectiveGear() {
+        return protectiveGear;
+    }
+
+    public int getCurrentRadiation() {
+        return currentRadiation;
+    }
+
     public interface Gear {
 
-        int clothes = 1;
-        int hazmatSuit = 2;
+        int clothes = 0;
+        int hazmatSuit = 1;
     }
 
     public interface Room {
 
-        int breakRoom = 1;
-        int controlRoom = 2;
-        int reactorRoom = 3;
+        int breakRoom = 0;
+        int controlRoom = 1;
+        int reactorRoom = 2;
     }
 
 

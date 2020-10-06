@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
-import java.security.cert.TrustAnchor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -52,14 +51,9 @@ public class UserActivity extends AppCompatActivity {
     private static Boolean userState;
     private static List<String> recievedBytes = new ArrayList<>();
     RadiationActivity radiation = new RadiationActivity();
-    private static String byteProtocol;
     static Boolean clockedIn;
     private static final int REQUEST_ENABLE_BT = 1;
 
-
-    TextView textByteCnt;
-
-    Button btnTest;
 
     private UUID myUUID;
     private final String UUID_STRING_WELL_KNOWN_SPP =
@@ -92,7 +86,6 @@ public class UserActivity extends AppCompatActivity {
 
 
         Button changeRadiationButton = findViewById(R.id.button_change_radiation);
-
         changeRadiationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -104,36 +97,18 @@ public class UserActivity extends AppCompatActivity {
             }
         });
 
-        btnTest = findViewById(R.id.btnTest);
-        Button btnWarningNotification = findViewById(R.id.button_warning_notification);
-
-
-        btnWarningNotification.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                //TODO: this should be started when i clock in
-
-
-            }
-        });
-
-        btnTest.setOnClickListener(new View.OnClickListener() {
+        Button clockInButton = findViewById(R.id.button_clock_in);
+        clockInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
                 determineOperation(Operation.CLOCK_IN_OR_OUT, new byte[] {0,0,0,0,0x0A,6,1,5,5,5,4,9} );
-
-
             }
-
-
         });
 
-        Button btnUserHistory = findViewById(R.id.button_user_history);
 
-        btnUserHistory.setOnClickListener(new View.OnClickListener() {
+
+        Button userHistoryButton = findViewById(R.id.button_user_history);
+        userHistoryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
@@ -142,6 +117,47 @@ public class UserActivity extends AppCompatActivity {
             }
         });
 
+        Button breakRoomButton = findViewById(R.id.button_break_room);
+        breakRoomButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                byte[] buffer = {(byte)0};
+                determineOperation(Operation.SET_ROOM, buffer);
+            }
+        });
+        Button controlRoomButton = findViewById(R.id.button_control_room);
+        controlRoomButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                byte[] buffer = {(byte)1};
+                determineOperation(Operation.SET_ROOM, buffer);
+            }
+        });
+        Button reactorRoomButton = findViewById(R.id.button_reactor_room);
+        reactorRoomButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                byte[] buffer = {(byte)2};
+                determineOperation(Operation.SET_ROOM, buffer);
+            }
+        });
+
+        Button equipHazmatButton = findViewById(R.id.button_equip_hazmat);
+        equipHazmatButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                byte[] buffer = {(byte)1};
+                determineOperation(Operation.SET_PROTECTIVE_GEAR, buffer);
+            }
+        });
+        Button unequipHazmatButton = findViewById(R.id.button_unequip_hazmat);
+        unequipHazmatButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                byte[] buffer = {(byte)0};
+                determineOperation(Operation.SET_PROTECTIVE_GEAR, buffer);
+            }
+        });
 
 
     }
@@ -159,8 +175,6 @@ public class UserActivity extends AppCompatActivity {
 
         new Thread(() -> {
 
-            //TODO: should this thread also handle the update of sending time every minute, and everytime radiation is sent?
-
             int[] intervals = radiation.getIntervals();
 
             boolean warning = false;
@@ -169,7 +183,6 @@ public class UserActivity extends AppCompatActivity {
             while(!warning && clockedIn) {
 
                 warning = radiation.checkRadiationLimit();
-
                 int currentRadiationExposure = radiation.getRadiationExposure();
 
 
@@ -201,7 +214,12 @@ public class UserActivity extends AppCompatActivity {
                         }
                     });
 
-
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateUiForTest();
+                        }
+                    });
                 }
 
                 try {
@@ -209,10 +227,43 @@ public class UserActivity extends AppCompatActivity {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
             }
 
         }).start();
+
+
+    }
+
+    private void updateUiForTest() {
+
+        int rad = radiation.getCurrentRadiation();
+        double rc = radiation.getRoomCoefficient();
+        int pc = radiation.getProtectiveGear();
+
+
+
+        TextView pcView = findViewById(R.id.textview_pc);
+        pcView.setText(Integer.toString(pc));
+
+        TextView rcView = findViewById(R.id.textview_rc);
+        rcView.setText(Double.toString(rc));
+
+        TextView radView = findViewById(R.id.textview_radiation);
+        radView.setText(Integer.toString(rad));
+
+    }
+
+
+    private void cancelTimerThreads() {
+
+        if(consoleCountDownTimer != null){
+            consoleCountDownTimer.cancel();
+        }
+        if(mCountDownTimer != null){
+            mCountDownTimer.cancel();
+        }
+        radiation.totalExposure = 0;
+        radiation.setValuesChanged(true);
 
 
     }
@@ -257,6 +308,7 @@ public class UserActivity extends AppCompatActivity {
 
                 public void onTick(long millisUntilFinished) {
 
+                    /*
                     if (!clockedIn) { //TODO: why check this everytime? why not run a function when we check out that deletes our timers?
                         radiation.setValuesChanged(true);
                         timeInfo.setText("Have a nice day");
@@ -264,14 +316,16 @@ public class UserActivity extends AppCompatActivity {
                         mCountDownTimer.cancel();
                     }
 
-                    else {
-                        long time = millisUntilFinished/1000;
-                        long hours = time / 3600;
-                        long minutes = (time % 3600) / 60;
-                        long seconds = time % 60;
-                        String timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-                        timeInfo.setText(timeString);
-                    }
+                     */
+
+
+                    long time = millisUntilFinished/1000;
+                    long hours = time / 3600;
+                    long minutes = (time % 3600) / 60;
+                    long seconds = time % 60;
+                    String timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+                    timeInfo.setText(timeString);
+
                 }
 
                 public void onFinish() {
@@ -333,12 +387,9 @@ public class UserActivity extends AppCompatActivity {
         }
         Log.d("RECEIEVED RFID number", String.valueOf(recievedBytes));
 
-        db.getUserInfo(currentUser.getCurrentUser().getUid()).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        db.getUserInfo(Objects.requireNonNull(currentUser.getCurrentUser()).getUid()).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
-
-                //db.getUserInfo(Objects.requireNonNull(currentUser.getCurrentUser()).getUid()).addOnCompleteListener(task -> {
-
 
 
                     if (task.isSuccessful()) {
@@ -354,16 +405,16 @@ public class UserActivity extends AppCompatActivity {
                             db.setUserClockInState(false, documentId);
                             clockedIn = false;
                             sendResponse(new byte[] {Responses.CLOCK_IN, Responses.CLOCK_OUT_SUCCESSFUL});
-
+                            cancelTimerThreads();
                         }
                         else {
                             db.addClockInHistory(currentUser.getCurrentUser().getUid(), userState);
-
                             db.setUserClockInState(true, documentId);
                             clockedIn = true;
                             sendResponse(new byte[] {Responses.CLOCK_IN, Responses.CLOCK_IN_SUCCESSFUL});
+                            prepareWarning();
                         }
-                        prepareWarning(); //TODO: this should only run when we clock in?
+
                     }
                 }
                 else {
@@ -552,9 +603,6 @@ public class UserActivity extends AppCompatActivity {
 
         @Override
         public void run() {
-            int bytes = 0;
-
-            String strRx = "";
 
             byte[] buffer = new byte[1024];
             int operation;
@@ -562,7 +610,6 @@ public class UserActivity extends AppCompatActivity {
             while (true) {
                 try {
 
-                    byte currentByte;
                     int informationByteSize = 0;
 
 
@@ -625,8 +672,8 @@ public class UserActivity extends AppCompatActivity {
 
         byte CLOCK_IN_OR_OUT = 0;
         byte NEW_RADIATION_LEVEL = 4;
-        byte SET_PROTECTIVE_GEAR = 5;
-        byte SET_ROOM = 6;
+        byte SET_ROOM = 5;
+        byte SET_PROTECTIVE_GEAR = 6;
 
     }
 
@@ -661,18 +708,19 @@ public class UserActivity extends AppCompatActivity {
                 int radiationValue = buffer[0];
                 Log.d("buffer value for radiation", String.valueOf(radiationValue));
                 changeRadiationLevel(radiationValue);
-
                 break;
 
             case Operation.SET_PROTECTIVE_GEAR:
-                Log.d("operation", "inside protective gear changed");
+                Log.d("operation", "inside set protective gear");
                 int gear = buffer[0];
                 setProtectiveGear(gear);
+                break;
 
             case Operation.SET_ROOM:
-                Log.d("operation", "inside protective gear changed");
+                Log.d("operation", "inside set room ");
                 int room = buffer[0];
                 setRoom(room);
+                break;
 
             default:
 
@@ -696,66 +744,3 @@ public class UserActivity extends AppCompatActivity {
 }
 
 
-
-        /*
-        inputPane = (LinearLayout)findViewById(R.id.inputpane);
-        inputField = (EditText)findViewById(R.id.input);
-
-        btnSend.setOnClickListener(new View.OnClickListener(){
-
-            @Override
-            public void onClick(View v) {
-                if(myThreadConnected!=null){
-                    byte[] bytesToSend = inputField.getText().toString().getBytes();
-                    myThreadConnected.write(bytesToSend);
-                    byte[] NewLine = "\n".getBytes();
-                    myThreadConnected.write(NewLine);
-                }
-            }});
-
-
-
-
-        btnClear = (Button)findViewById(R.id.clear);
-        btnClear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                textStatus.setText("");
-                textByteCnt.setText("");
-            }
-        });
-
-        */
-
-        /*
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)){
-            Toast.makeText(this,
-                    "FEATURE_BLUETOOTH NOT support",
-                    Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
-
-
-         */
-
-//using the well-known SPP UUID
-
-/*
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (bluetoothAdapter == null) {
-            Toast.makeText(this,
-                    "Bluetooth is not supported on this hardware platform",
-                    Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
-
- */
-/*
-        String stInfo = bluetoothAdapter.getName() + "\n" +
-                bluetoothAdapter.getAddress();
-        Log.d("Device information", stInfo);
-        textInfo.setText(stInfo);
-
- */

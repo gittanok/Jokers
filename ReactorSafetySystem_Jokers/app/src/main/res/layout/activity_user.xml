@@ -7,35 +7,26 @@
     android:layout_height="match_parent">
 
     <Button
-        android:id="@+id/btnTest"
+        android:id="@+id/button_clock_in"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="clock in/out"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/button_warning_notification"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Warning"
-        app:layout_constraintBottom_toTopOf="@+id/btnTest"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.126"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.537" />
+        app:layout_constraintVertical_bias="0.499" />
 
     <ProgressBar
         android:id="@+id/progress_radiation"
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="108dp"
         android:layout_height="23dp"
+        android:layout_marginTop="60dp"
         android:progress="25"
-        app:layout_constraintBottom_toTopOf="@+id/button_warning_notification"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.511"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textview_time_remaining" />
 
@@ -43,22 +34,22 @@
         android:id="@+id/textview_time_remaining"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="76dp"
+        android:layout_marginTop="84dp"
         android:text="time"
-        app:layout_constraintBottom_toTopOf="@+id/button_warning_notification"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/button_change_radiation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="156dp"
+        android:layout_marginBottom="140dp"
         android:text="change radiation"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.46"
+        app:layout_constraintHorizontal_bias="0.093"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
@@ -74,14 +65,16 @@
         app:layout_constraintVertical_bias="0.759" />
 
     <Button
-        android:id="@+id/button:change_pc"
+        android:id="@+id/button_equip_hazmat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="change pc"
-        app:layout_constraintBottom_toTopOf="@+id/btnTest"
+        android:text="equip hazmat"
+        app:layout_constraintBottom_toTopOf="@+id/button_clock_in"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.08"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button_warning_notification" />
+        app:layout_constraintTop_toBottomOf="@+id/progress_radiation"
+        app:layout_constraintVertical_bias="0.261" />
 
     <Button
         android:id="@+id/button_control_room"
@@ -90,9 +83,9 @@
         android:text="control room"
         app:layout_constraintBottom_toTopOf="@+id/button_change_radiation"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.478"
+        app:layout_constraintHorizontal_bias="0.085"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnTest"
+        app:layout_constraintTop_toBottomOf="@+id/button_clock_in"
         app:layout_constraintVertical_bias="0.155" />
 
     <Button
@@ -102,9 +95,10 @@
         android:text="Break room"
         app:layout_constraintBottom_toTopOf="@+id/button_change_radiation"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.481"
+        app:layout_constraintHorizontal_bias="0.123"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button_control_room" />
+        app:layout_constraintTop_toBottomOf="@+id/button_control_room"
+        app:layout_constraintVertical_bias="0.761" />
 
     <Button
         android:id="@+id/button_reactor_room"
@@ -113,9 +107,93 @@
         android:text="Reactor room"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.48"
+        app:layout_constraintHorizontal_bias="0.088"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button_change_radiation"
-        app:layout_constraintVertical_bias="0.324" />
+        app:layout_constraintVertical_bias="0.119" />
+
+    <Button
+        android:id="@+id/button_unequip_hazmat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="unequip hazmat"
+        app:layout_constraintBottom_toTopOf="@+id/button_clock_in"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.014"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_equip_hazmat"
+        app:layout_constraintVertical_bias="0.406" />
+
+    <TextView
+        android:id="@+id/textview_protective_gear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="124dp"
+        android:layout_marginBottom="32dp"
+        android:text="on/off"
+        app:layout_constraintBottom_toTopOf="@+id/textView4"
+        app:layout_constraintStart_toEndOf="@+id/button_unequip_hazmat"
+        app:layout_constraintTop_toTopOf="@+id/textview_pc"
+        app:layout_constraintVertical_bias="0.034" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="44dp"
+        android:text="hazmat suit"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/progress_radiation" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:layout_marginEnd="100dp"
+        android:text="Room"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textview_pc" />
+
+    <TextView
+        android:id="@+id/textview_pc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:text="pc"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.546"
+        app:layout_constraintStart_toEndOf="@+id/textview_protective_gear"
+        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+    <TextView
+        android:id="@+id/textview_rc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="44dp"
+        android:text="rc"
+        app:layout_constraintBottom_toBottomOf="@+id/textView4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/textView4" />
+
+    <TextView
+        android:id="@+id/textView10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:layout_marginEnd="52dp"
+        android:text="radiation"
+        app:layout_constraintEnd_toStartOf="@+id/textview_radiation"
+        app:layout_constraintTop_toBottomOf="@+id/textView4" />
+
+    <TextView
+        android:id="@+id/textview_radiation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:text="nr:"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textView10" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -30,9 +30,7 @@
             android:layout_alignParentEnd="true"
             android:layout_marginStart="20dp"
             android:layout_marginTop="30dp"
-            android:layout_marginEnd="20dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textview_counterin" />
+            android:layout_marginEnd="20dp" />
 
         <TextView
             android:id="@+id/textview_counterin"
@@ -71,9 +69,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginTop="30dp"
             android:layout_marginEnd="20dp"
-            android:textColor="@android:color/white"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textview_counterout" />
+            android:textColor="@android:color/white" />
 
         <TextView
             android:id="@+id/textview_counter_clock_in"
