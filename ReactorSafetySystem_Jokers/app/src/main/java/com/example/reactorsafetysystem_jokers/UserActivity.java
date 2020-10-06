@@ -84,7 +84,7 @@ public class UserActivity extends AppCompatActivity {
         myThreadConnectBTdevice.start();
 */
 
-
+/*
         Button changeRadiationButton = findViewById(R.id.button_change_radiation);
         changeRadiationButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,7 +105,7 @@ public class UserActivity extends AppCompatActivity {
             }
         });
 
-
+*/
 
         Button userHistoryButton = findViewById(R.id.button_user_history);
         userHistoryButton.setOnClickListener(new View.OnClickListener() {
@@ -116,7 +116,7 @@ public class UserActivity extends AppCompatActivity {
 
             }
         });
-
+/*
         Button breakRoomButton = findViewById(R.id.button_break_room);
         breakRoomButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -160,6 +160,8 @@ public class UserActivity extends AppCompatActivity {
         });
 
 
+
+         */
     }
 
     private void prepareWarning(){
@@ -241,12 +243,16 @@ public class UserActivity extends AppCompatActivity {
         int pc = radiation.getProtectiveGear();
 
 
-
+/*
         TextView pcView = findViewById(R.id.textview_pc);
         pcView.setText(Integer.toString(pc));
-
+*/
         TextView rcView = findViewById(R.id.textview_rc);
-        rcView.setText(Double.toString(rc));
+        if(rc == 5){
+            rcView.setText("ON");
+        } else{
+            rcView.setText("OFF");
+        }
 
         TextView radView = findViewById(R.id.textview_radiation);
         radView.setText(Integer.toString(rad));
