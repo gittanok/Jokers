@@ -30,6 +30,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -71,7 +74,7 @@ public class UserActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user);
 
         createNotificationChannel();
-/*
+
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Intent intent = getIntent();
         String address = intent.getStringExtra(BluetoothActivity.DEVICE_ADDRESS);
@@ -82,7 +85,7 @@ public class UserActivity extends AppCompatActivity {
 
         myThreadConnectBTdevice = new ThreadConnectBTdevice(device);
         myThreadConnectBTdevice.start();
-*/
+
 
 /*
         Button changeRadiationButton = findViewById(R.id.button_change_radiation);
@@ -370,8 +373,6 @@ public class UserActivity extends AppCompatActivity {
                         .bigText("Be careful"))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
-        builder2.setProgress(100, 40, false);
-
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(UserActivity.this);
         notificationManager.notify(5, builder2.build());
 
@@ -383,6 +384,10 @@ public class UserActivity extends AppCompatActivity {
 
         List<String> recievedBytes = new ArrayList<>();
         //"A6155549";
+
+        Log.d("RFID number", String.valueOf(RFID));
+
+        Log.d("RFID lenght", String.valueOf(RFID.length));
 
 
         // test code
@@ -406,20 +411,65 @@ public class UserActivity extends AppCompatActivity {
 
          */
 
+        /*
         for(int i = 0; i < RFID.length; i++) {
             byte byteNumber = Array.getByte(RFID,i);
             recievedBytes.add(String.valueOf(byteNumber));
         }
 
+        Log.d("RFID received bytes", String.valueOf(recievedBytes));
         String stringRFID = "";
+
 
         for (String loopThroughByte : recievedBytes) {
             stringRFID += loopThroughByte;
         }
 
+
+
         // varför????
         String finalStringRFID = stringRFID;
 
+        Log.d("RFID final string", finalStringRFID);
+*/
+
+        /*
+String rfidValue = "";
+        for(int i = 0; i < RFID.length; i++ ){
+
+            Log.d("rfid[i]", String.valueOf(RFID[i]));
+            rfidValue = String.valueOf(+ RFID[i]);
+        }
+
+        Log.d("rfidValue", rfidValue);
+
+        String temp = new String(RFID, StandardCharsets.UTF_8);
+
+        Log.d("new test", temp);
+
+        String finalRfidValue = rfidValue;
+
+         */
+
+        String s = "";
+
+
+        for (int i = 0; i<4; i++) {
+            String st = String.format("%02X", RFID[i]);
+            s += st;
+        }
+
+        Log.d("ssss", s);
+
+int t = 0;
+        for (int i = 0; i < 4; i++) {
+            Byte b = new Byte(RFID[i]);
+            t = b.intValue();
+            Log.d("intbla", String.valueOf(t));
+        }
+
+
+        String finalS = s;
         db.getUserInfo(Objects.requireNonNull(currentUser.getCurrentUser()).getUid()).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -432,7 +482,7 @@ public class UserActivity extends AppCompatActivity {
                         userState = (Boolean) Objects.requireNonNull(document.getData().get("userstate"));
                     }
 
-                    if (check_RFID.equals(finalStringRFID)) {
+                    if (check_RFID.equals(finalS)) {
                         if (userState) {
                             db.addClockOutHistory(currentUser.getCurrentUser().getUid(), userState);
                             db.setUserClockInState(false, documentId);
@@ -637,14 +687,15 @@ public class UserActivity extends AppCompatActivity {
         @Override
         public void run() {
 
-            byte[] buffer = new byte[1024];
             int operation;
 
             while (true) {
                 try {
+                    byte[] buffer = new byte[4];
 
                     int informationByteSize = 0;
 
+                    //F79EB0F7
 
                     connectedInputStream.read(buffer, 0, 1);
 
@@ -667,10 +718,14 @@ public class UserActivity extends AppCompatActivity {
                         informationByteSize = 1;
                     }
 
+                    //first bit is always the same as the last.
+
                     for(int i = 0; i < informationByteSize; i++){
 
                             connectedInputStream.read(buffer, 0, 1);
                             buffer[i] = buffer[0];
+
+
                     }
                     determineOperation(operation, buffer);
 
@@ -723,7 +778,7 @@ public class UserActivity extends AppCompatActivity {
 
     private void sendResponse(byte[] byteResponse){
 
-  //      myThreadConnected.write(byteResponse);
+        myThreadConnected.write(byteResponse);
     }
 
     private void determineOperation(int operation, byte[] buffer){
@@ -732,6 +787,11 @@ public class UserActivity extends AppCompatActivity {
             case Operation.CLOCK_IN_OR_OUT:
 
                 Log.d("operation", "inside clock in/out ");
+
+                for (byte b : buffer) {
+                    String st = String.format("%02X", b);
+                    Log.d("new print", st);
+                }
 
                 clockInOrOut(buffer);
                 break;
@@ -745,12 +805,16 @@ public class UserActivity extends AppCompatActivity {
 
             case Operation.SET_PROTECTIVE_GEAR:
                 Log.d("operation", "inside set protective gear");
+
+                Log.d("protective byte", String.valueOf(buffer[0]));
                 int gear = buffer[0];
                 setProtectiveGear(gear);
                 break;
 
             case Operation.SET_ROOM:
                 Log.d("operation", "inside set room ");
+
+                Log.d("room byte", String.valueOf(buffer[0]));
                 int room = buffer[0];
                 setRoom(room);
                 break;
