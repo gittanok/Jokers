@@ -47,9 +47,9 @@ public class UserActivity extends AppCompatActivity {
     private CountDownTimer consoleCountDownTimer;
     private static String check_RFID;
     private static String documentId;
-    private static String disByteArray = "A6155549";
+   //test number
+   // private static String disByteArray = "A6155549";
     private static Boolean userState;
-    private static List<String> recievedBytes = new ArrayList<>();
     RadiationActivity radiation = new RadiationActivity();
     static Boolean clockedIn;
     private static final int REQUEST_ENABLE_BT = 1;
@@ -243,16 +243,25 @@ public class UserActivity extends AppCompatActivity {
         int pc = radiation.getProtectiveGear();
 
 
-/*
-        TextView pcView = findViewById(R.id.textview_pc);
-        pcView.setText(Integer.toString(pc));
-*/
-        TextView rcView = findViewById(R.id.textview_rc);
-        if(rc == 5){
-            rcView.setText("ON");
+
+        TextView pcView = findViewById(R.id.textview_protective_gear);
+        if(pc == 5){
+            pcView.setText("ON");
         } else{
-            rcView.setText("OFF");
+            pcView.setText("OFF");
         }
+
+        TextView rcView = findViewById(R.id.textview_rc);
+        if(rc == 0.1){
+            rcView.setText("Break room");
+        }
+        else if(rc == 0.5){
+            rcView.setText("Control room");
+        }
+        else if(rc == 1.6){
+            rcView.setText("Reactor room");
+        }
+
 
         TextView radView = findViewById(R.id.textview_radiation);
         radView.setText(Integer.toString(rad));
@@ -372,10 +381,12 @@ public class UserActivity extends AppCompatActivity {
 
     private void clockInOrOut(byte[] RFID){
 
+        List<String> recievedBytes = new ArrayList<>();
         //"A6155549";
 
 
-        byte[] bytes = new byte[] {0,0,0,0,0x0A,6,1,5,5,5,4,9};
+        // test code
+     //   byte[] bytes = new byte[] {0,0,0,0,0x0A,6,1,5,5,5,4,9};
 
         /*
         for (byte b : bytes) {
@@ -385,13 +396,29 @@ public class UserActivity extends AppCompatActivity {
 
         }*/
 
-        //TODO: change so that the oncoming RFID is used.
-
+        // test code
+        /*
         for(int i = 0; i < bytes.length; i++) {
             byte byteNumber = Array.getByte(bytes,i);
             recievedBytes.add(String.valueOf(byteNumber));
         }
         Log.d("RECEIEVED RFID number", String.valueOf(recievedBytes));
+
+         */
+
+        for(int i = 0; i < RFID.length; i++) {
+            byte byteNumber = Array.getByte(RFID,i);
+            recievedBytes.add(String.valueOf(byteNumber));
+        }
+
+        String stringRFID = "";
+
+        for (String loopThroughByte : recievedBytes) {
+            stringRFID += loopThroughByte;
+        }
+
+        // varför????
+        String finalStringRFID = stringRFID;
 
         db.getUserInfo(Objects.requireNonNull(currentUser.getCurrentUser()).getUid()).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -405,7 +432,7 @@ public class UserActivity extends AppCompatActivity {
                         userState = (Boolean) Objects.requireNonNull(document.getData().get("userstate"));
                     }
 
-                    if (check_RFID.equals( disByteArray )) {
+                    if (check_RFID.equals(finalStringRFID)) {
                         if (userState) {
                             db.addClockOutHistory(currentUser.getCurrentUser().getUid(), userState);
                             db.setUserClockInState(false, documentId);

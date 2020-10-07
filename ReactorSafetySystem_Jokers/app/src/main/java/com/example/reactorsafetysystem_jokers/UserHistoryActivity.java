@@ -46,6 +46,8 @@ public class UserHistoryActivity extends AppCompatActivity {
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this,R.layout.row, arrayList);
         ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<String>(this,R.layout.row, arrayList2);
 
+        clockInCounter = 0;
+        clockOutCounter = 0;
         db.getUserClockInHistory(currentUser.getCurrentUser().getUid()).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {

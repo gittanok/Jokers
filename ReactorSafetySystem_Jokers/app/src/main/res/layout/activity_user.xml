@@ -41,10 +41,11 @@
             android:id="@+id/button_user_history"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/textview_radiation"
             android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
             android:layout_marginTop="350dp"
             android:layout_marginEnd="30dp"
+            android:layout_marginBottom="40dp"
             android:text="UserHistory" />
 
         <TextView
