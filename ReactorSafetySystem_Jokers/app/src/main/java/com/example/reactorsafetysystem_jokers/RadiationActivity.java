@@ -8,7 +8,7 @@ public class RadiationActivity {
     int protectiveGear = 1;
     double roomCoefficient = 1;
     int totalExposure = 0;
-    int radiationLimit = 5000; //500000
+    int radiationLimit = 500000;
     boolean valuesChanged = true;
 
 
@@ -19,7 +19,6 @@ public class RadiationActivity {
             return false;
         }
         return true;
-
     }
 
     public int timeRemaining() {
@@ -28,17 +27,13 @@ public class RadiationActivity {
         return  timeRemaining;
     }
 
-
-
     public int getRadiationExposure() {
         return totalExposure;
     }
 
     public void setCurrentRadiation(int newRadiation){
-
         currentRadiation = newRadiation;
         valuesChanged = true;
-
     }
 
     public boolean getValuesChanged(){
@@ -60,35 +55,29 @@ public class RadiationActivity {
     }
 
     public void setRoom(int room) {
-
-        if (room == Room.breakRoom){
+        if (room == Room.breakRoom) {
             roomCoefficient = 0.1;
         }
-        else if(room == Room.controlRoom){
+        else if(room == Room.controlRoom) {
             roomCoefficient = 0.5;
         }
-        else if(room == Room.reactorRoom){
+        else if(room == Room.reactorRoom) {
             roomCoefficient = 1.6;
         }
-
         valuesChanged = true;
-
     }
 
     public void setProtectiveGear(int gear){
-
-        if (gear == Gear.clothes){
+        if (gear == Gear.clothes) {
             protectiveGear = 1;
         }
-        else if(gear == Gear.hazmatSuit){
+        else if(gear == Gear.hazmatSuit) {
             protectiveGear = 5;
         }
-
         valuesChanged = true;
     }
 
     public double getRoomCoefficient() {
-
         return  roomCoefficient;
     }
 
@@ -101,17 +90,13 @@ public class RadiationActivity {
     }
 
     public interface Gear {
-
         int clothes = 0;
         int hazmatSuit = 1;
     }
 
     public interface Room {
-
         int breakRoom = 0;
         int controlRoom = 1;
         int reactorRoom = 2;
     }
-
-
 }

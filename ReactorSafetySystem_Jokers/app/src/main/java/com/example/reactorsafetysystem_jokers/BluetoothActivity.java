@@ -21,7 +21,6 @@ import java.util.Set;
 
 public class BluetoothActivity extends AppCompatActivity {
 
-
     BluetoothAdapter bluetoothAdapter;
     ArrayList<BluetoothDevice> pairedDeviceArrayList;
     ListView listViewPairedDevice;
@@ -36,10 +35,7 @@ public class BluetoothActivity extends AppCompatActivity {
 
         listViewPairedDevice = (ListView)findViewById(R.id.pairedlist);
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
     }
-
-
 
     @Override
     protected void onStart() {
@@ -50,9 +46,7 @@ public class BluetoothActivity extends AppCompatActivity {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
         }
-
         setup();
-
     }
 
     private void setup() {
@@ -66,6 +60,7 @@ public class BluetoothActivity extends AppCompatActivity {
 
             pairedDeviceAdapter = new ArrayAdapter<BluetoothDevice>(this,
                     android.R.layout.simple_list_item_1, pairedDeviceArrayList);
+
             listViewPairedDevice.setAdapter(pairedDeviceAdapter);
 
             listViewPairedDevice.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -83,22 +78,12 @@ public class BluetoothActivity extends AppCompatActivity {
                                     + "Class: " + device.getClass(),
                             Toast.LENGTH_LONG).show();
 
-
                     Intent intent = new Intent(new Intent(getApplicationContext(), UserActivity.class));
                     intent.putExtra(DEVICE_ADDRESS, device.getAddress());
-                    Log.d("Device", device.toString());
-
-                    //TODO check if you get to the next activity as intended, should probably be moved to ONCREATE.
-                    // Set result and finish this Activity
+                    
                     startActivity(intent);
 
-                    //setResult(Activity.RESULT_OK, intent);
                     finish();
-
-                    //textStatus.setText("start ThreadConnectBTdevice");
-
- //                   startActivity(new Intent(getApplicationContext(), BluetoothActivity.class) );
-
                 }
             });
         }
